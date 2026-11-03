@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <title>Barber.com | Find your next cut</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/auth.css">
+    <script src="/js/nav.js" defer></script>
+    <script src="/js/home.js" defer></script>
+    <script src="/js/product-data.js" defer></script>
+    <script src="/js/products.js" defer></script>
+    <script src="/js/logout.js" defer></script>
+</head>
+<body>
+<nav class="site-nav" aria-label="Main navigation">
+    <div class="nav-side">
+        <button class="nav-control" type="button" data-menu-toggle aria-expanded="false" aria-controls="sideMenu"><span
+                class="menu-icon" aria-hidden="true"></span><span class="menu-label">Menu</span></button>
+        <button class="nav-control" type="button" data-search-toggle>
+            <svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true" fill="none">
+                <circle cx="8.5" cy="8.5" r="5.5"/>
+                <path d="m13 13 4 4"/>
+            </svg>
+            <span class="search-label">Søg</span></button>
+    </div>
+    <a class="brand" href="/" aria-label="Barber.com home"><img class="logo-image" src="/images/barbercom-logo.png"
+                                                                alt="Barber.com"></a>
+    <div class="nav-side nav-side--right">
+        <button class="nav-control contact-control" type="button" data-contact-toggle aria-label="Contact us"><span
+                class="contact-label">Kontakt os</span>
+            <svg class="nav-glyph contact-icon" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M4 3h12v10H9l-4 4v-4H4z"/>
+                <path d="M7 7h6M7 10h4"/>
+            </svg>
+        </button>
+        <a class="nav-control icon-control" href="/account.html" aria-label="My account">
+            <svg class="nav-glyph" viewBox="0 0 20 20" aria-hidden="true">
+                <circle cx="10" cy="6" r="3"/>
+                <path d="M4 18c.7-3.2 2.7-5 6-5s5.3 1.8 6 5"/>
+            </svg>
+        </a>
+        <button class="nav-control icon-control" type="button" data-cart-toggle aria-label="Shopping cart">
+            <svg class="nav-glyph" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M2 3h2l2 10h9l2-7H5"/>
+                <circle cx="8" cy="17" r="1"/>
+                <circle cx="15" cy="17" r="1"/>
+            </svg>
+            <span class="cart-count" id="cartCount">0</span></button>
+    </div>
+</nav>
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<div class="menu-backdrop" id="rightBackdrop"></div>
+<aside class="side-menu" id="sideMenu" aria-hidden="true" aria-label="Site menu">
+    <div class="side-menu__top"><span class="side-menu__title">Barber.com</span>
+        <button class="close-menu" type="button" data-menu-close aria-label="Close menu">×</button>
+    </div>
+    <label class="menu-search" for="menuSearch">
+        <svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true" fill="none">
+            <circle cx="8.5" cy="8.5" r="5.5"/>
+            <path d="m13 13 4 4"/>
+        </svg>
+        <input id="menuSearch" type="search" placeholder="Search Barber.com"></label>
+    <nav class="menu-links"><a href="/">Home</a><a href="/booking.html">Book an appointment</a><a href="/shop.html">Shop
+        products</a><a href="/login.html">Sign in</a><a href="/register.html">Create account</a></nav>
+    <p class="side-menu__footer">Browse freely. Sign in when you are ready to book or buy.</p></aside>
+<aside class="right-panel" id="contactPanel">
+    <div class="panel-top"><h2>Contact us</h2>
+        <button class="close-menu" type="button" data-right-close>×</button>
+    </div>
+    <dl class="contact-details">
+        <div>
+            <dt>Email</dt>
+            <dd>hello@barber.com</dd>
+        </div>
+        <div>
+            <dt>Phone</dt>
+            <dd>+45 12 34 56 78</dd>
+        </div>
+        <div>
+            <dt>Visit us</dt>
+            <dd>Vesterbrogade 181<br>1800 Frederiksberg</dd>
+        </div>
+    </dl>
+</aside>
+<aside class="right-panel" id="cartPanel">
+    <div class="panel-top"><h2>Your cart</h2>
+        <button class="close-menu" type="button" data-right-close>×</button>
+    </div>
+    <ul class="cart-items" id="cartItems"></ul>
+    <div class="cart-total"><span>Total</span><span id="cartTotal">0.00 DKK</span></div>
+</aside>
+<main class="home-hero">
+    <section class="hero-frame" aria-label="Welcome to Barber.com">
+        <article class="hero-slide is-active"><img src="/images/home-copenhagen.png"
+                                                   alt="Barber giving a modern taper fade in Copenhagen">
+            <div class="hero-copy"><p class="eyebrow">Danske barbershops</p>
+                <h1>Velkommen til Barber.com</h1>
+                <p>Opdag dygtige barbers nær dig og find en fresh fade allerede i dag. Henvis os
+                    gerne til
+                    din lokale barbershop hvis de mangler bookingsystem eller salgskanal.</p><a class="primary-button"
+                                                                                            href="/booking.html">Book
+                    en tid</a></div>
+        </article>
+        <article class="hero-slide"><img src="/images/home-fade.png"
+                                         alt="Mand der styler sit hår med voks foran spejlet på et blåt badeværelse">
+            <div class="hero-copy"><p class="eyebrow">Gem dine oplysninger</p>
+                <h1>Opret en konto</h1>
+                <p>Spar 15% på vores produkter med en
+                    konto hos os. Vi gemmer dine oplysninger sikkert og krypteret efter GDPR-lovgivningen.</p><a
+                        class="primary-button" href="/shop.html">Lav en bruger</a></div>
+        </article>
+        <article class="hero-slide"><img src="/images/home-new-york.png"
+                                         alt="Grøn reol med hårvoks, gel, hårspray og andre stylingprodukter">
+            <div class="hero-copy"><p class="eyebrow">Køb lokalt</p>
+                <h1>Støt din lokale barber</h1>
+                <p>Ved at handle på Barber.com støtter du din lokale barber. Alle penge går ubeskåret til barbershopsne.
+                    Vi tager hverken gebyr eller andet.</p><a
+                        class="primary-button" href="/shop.html">Udforsk shoppen</a></div>
+        </article>
+        <div class="slide-nav" aria-label="Welcome slides">
+            <button class="slide-dot is-active" type="button" data-slide="0"
+                    aria-label="Show Copenhagen slide"></button>
+            <button class="slide-dot" type="button" data-slide="1" aria-label="Show New York slide"></button>
+            <button class="slide-dot" type="button" data-slide="2" aria-label="Show fade slide"></button>
+        </div>
+    </section>
+</main>
+<section class="products-section" id="shop">
+    <div class="products-head">
+        <div><p class="eyebrow">Barber.com essentials</p>
+            <h2>Køb af din lokale barber</h2></div>
+        <div class="products-controls">
+            <button id="productsPrevious">←</button>
+            <span id="productPage">1 / 2</span>
+            <button id="productsNext">→</button>
+        </div>
+    </div>
+    <div class="product-grid" id="productGrid"></div>
+</section>
+<section class="articles-section" aria-labelledby="articlesTitle">
+    <div class="articles-heading"><p class="eyebrow">Barber.com journal</p>
+        <h2 id="articlesTitle">Mere end bare en klipning.</h2>
+        <p>Råd, inspiration og lokale favoritter til dit næste besøg hos barberen.</p></div>
+    <div class="article-grid">
+        <article class="article-card"><p class="eyebrow">Produktguide</p>
+            <h3>Sådan finder du den rigtige voks</h3>
+            <p>Mat, naturlig eller stærk hold? Vi gennemgår de tre vigtigste typer voks, så du kan vælge den finish, der
+                passer til dit hår.</p><img class="article-card__image" src="/images/article-wax.png" alt="Hårvoks og barberredskaber på en barberdisk"><a href="/article.html?id=wax">Læs artikel →</a></article>
+        <article class="article-card"><p class="eyebrow">Barberens råd</p>
+            <h3>Hvad gør en fade virkelig skarp?</h3>
+            <p>En god fade handler om præcision, balance og en overgang der passer til dit ansigt. Her er det, din
+                barber fokuserer på.</p><img class="article-card__image" src="/images/article-fade.png" alt="Barber der laver en skarp fade"><a href="/article.html?id=fade">Læs artikel →</a></article>
+        <article class="article-card"><p class="eyebrow">København</p>
+            <h3>5 barbershops, du bør kende</h3>
+            <p>Fra klassiske stole til moderne studios: vores guide til Københavns stærkeste steder for et friskt
+                look.</p><img class="article-card__image" src="/images/article-copenhagen-barbers.png" alt="Barbershops i København"><a href="/article.html?id=copenhagen">Læs artikel →</a></article>
+    </div>
+</section>
+<section class="products-section products-section--right">
+    <div class="products-head">
+        <div><p class="eyebrow">Udvalgt til dig</p>
+            <h2>Voks, gel og hårspray</h2></div>
+        <div class="products-controls">
+            <button id="secondaryProductsPrevious" aria-label="Forrige produkter">←</button>
+            <span id="secondaryProductPage">1 / 2</span>
+            <button id="secondaryProductsNext" aria-label="Næste produkter">→</button>
+        </div>
+    </div>
+    <div class="product-grid" id="secondaryProductGrid"></div>
+</section>
+<footer class="site-footer">
+    <div class="footer-top">
+        <div><img class="footer-logo" src="/images/barbercom-logo.png" alt="Barber.com">
+            <p class="footer-intro">Din genvej til skarpe klip, gode barbers og produkter, der holder din stil på
+                plads.</p></div>
+        <div class="footer-column"><h3>Barber.com</h3><a href="/">Forside</a><a href="/booking.html">Book tid</a><a
+                href="/shop.html">Produkter</a><a href="#articlesTitle">Journal</a></div>
+        <div class="footer-column"><h3>Kontakt</h3><p>Lucas Hoffmann Christensen</p><a href="mailto:loegcas@gmail.com">loegcas@gmail.com</a><a
+                href="tel:+4561128112">+45 61128112</a><p>Vesterbrogade 181<br>1800 Frederiksberg</p>
+        </div>
+        <div class="footer-column"><h3>Følg os</h3>
+            <div class="social-links"><a href="https://instagram.com" target="_blank" rel="noreferrer">Instagram</a><a
+                    href="https://tiktok.com" target="_blank" rel="noreferrer">TikTok</a><a href="https://facebook.com"
+                                                                                            target="_blank"
+                                                                                            rel="noreferrer">Facebook</a><a
+                    href="https://youtube.com" target="_blank" rel="noreferrer">YouTube</a></div>
+        </div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 Barber.com. Alle rettigheder forbeholdes.</span><span>Privatliv · Vilkår · Cookies</span>
+    </div>
+</footer>
+</body>
+</html>

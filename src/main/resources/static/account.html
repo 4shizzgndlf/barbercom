@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <title>My account | Barber.com</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/auth.css">
+    <link rel="stylesheet" href="/css/account.css">
+    <script src="/js/nav.js" defer></script>
+    <script src="/js/footer.js" defer></script>
+    <script src="/js/account.js" defer></script>
+    <script src="/js/logout.js" defer></script>
+</head>
+<body class="account-page">
+<nav class="site-nav" aria-label="Main navigation">
+    <div class="nav-side">
+        <button class="nav-control" type="button" data-menu-toggle aria-expanded="false" aria-controls="sideMenu"><span
+                class="menu-icon" aria-hidden="true"></span><span class="menu-label">Menu</span></button>
+        <button class="nav-control" type="button" data-search-toggle>
+            <svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true" fill="none">
+                <circle cx="8.5" cy="8.5" r="5.5"/>
+                <path d="m13 13 4 4"/>
+            </svg>
+            <span class="search-label">Search</span></button>
+    </div>
+    <a class="brand" href="/"><img class="logo-image" src="/images/barbercom-logo.png" alt="Barber.com"></a>
+    <div class="nav-side nav-side--right">
+        <button class="nav-control contact-control" type="button" data-contact-toggle aria-label="Contact us"><span
+                class="contact-label">Contact us</span>
+            <svg class="nav-glyph contact-icon" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M4 3h12v10H9l-4 4v-4H4z"/>
+                <path d="M7 7h6M7 10h4"/>
+            </svg>
+        </button>
+        <a class="nav-control icon-control" href="/account.html" aria-label="My account">
+            <svg class="nav-glyph" viewBox="0 0 20 20" aria-hidden="true">
+                <circle cx="10" cy="6" r="3"/>
+                <path d="M4 18c.7-3.2 2.7-5 6-5s5.3 1.8 6 5"/>
+            </svg>
+        </a>
+        <button class="nav-control icon-control" type="button" data-cart-toggle aria-label="Shopping cart">
+            <svg class="nav-glyph" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M2 3h2l2 10h9l2-7H5"/>
+                <circle cx="8" cy="17" r="1"/>
+                <circle cx="15" cy="17" r="1"/>
+            </svg>
+            <span class="cart-count" id="cartCount">0</span></button>
+    </div>
+</nav>
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<div class="menu-backdrop" id="rightBackdrop"></div>
+<aside class="side-menu" id="sideMenu" aria-hidden="true">
+    <div class="side-menu__top"><span class="side-menu__title">Barber.com</span>
+        <button class="close-menu" type="button" data-menu-close aria-label="Close menu">×</button>
+    </div>
+    <label class="menu-search" for="menuSearch">
+        <svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true" fill="none">
+            <circle cx="8.5" cy="8.5" r="5.5"/>
+            <path d="m13 13 4 4"/>
+        </svg>
+        <input id="menuSearch" type="search" placeholder="Search Barber.com"></label>
+    <nav class="menu-links"><a href="/">Home</a><a href="/login.html">Book an appointment</a><a href="/">Shop
+        products</a><a href="/login.html">Sign in</a><a href="/register.html">Create account</a></nav>
+    <p class="side-menu__footer">Browse freely. Sign in when you are ready to book or buy.</p></aside>
+<aside class="right-panel" id="contactPanel">
+    <div class="panel-top"><h2>Contact us</h2>
+        <button class="close-menu" type="button" data-right-close>×</button>
+    </div>
+    <dl class="contact-details">
+        <div>
+            <dt>Email</dt>
+            <dd>hello@barber.com</dd>
+        </div>
+        <div>
+            <dt>Phone</dt>
+            <dd>+45 12 34 56 78</dd>
+        </div>
+        <div>
+            <dt>Visit us</dt>
+            <dd>Vesterbrogade 181<br>1800 Frederiksberg</dd>
+        </div>
+    </dl>
+</aside>
+<aside class="right-panel" id="cartPanel">
+    <div class="panel-top"><h2>Your cart</h2>
+        <button class="close-menu" type="button" data-right-close>×</button>
+    </div>
+    <ul class="cart-items" id="cartItems"></ul>
+    <div class="cart-total"><span>Total</span><span id="cartTotal">0.00 DKK</span></div>
+</aside>
+<main class="account-layout">
+    <section class="account-content" id="profile"><a class="back-link" href="/">← Tilbage til Barber.com</a>
+        <p class="eyebrow">Personlige oplysninger</p>
+        <h2 id="accountName">Min profil</h2>
+        <p class="account-intro">Redigér dine personlige oplysninger her.</p>
+        <section class="account-card">
+            <header><h3>Personlige oplysninger</h3></header>
+            <form id="profileForm" class="profile-form"><label>Fornavn<input name="firstName" required></label><label>Efternavn<input
+                    name="lastName" required></label><label>E-mail<input name="email" type="email"
+                                                                         required></label><label>Telefon<input
+                    name="phoneNumber" type="tel" inputmode="numeric" pattern="[0-9]{8}" title="Skriv 8 cifre uden +45"></label><label>Adresse<input
+                    name="address"></label><label>Postnummer<input name="zipCode" type="number"></label><label
+                    id="businessNameProfileField" hidden>Virksomhedsnavn<input name="businessName"></label><label>Ny
+                adgangskode <small>(valgfrit)</small><input name="password" type="password" minlength="8"></label>
+                <div>
+                    <button class="primary-button" type="submit">Gem ændringer</button>
+                    <p id="profileMessage" class="message"></p></div>
+            </form>
+        </section>
+        <section class="account-card" id="appointments">
+            <header><h3 id="appointmentsTitle">Bookinger</h3><a id="bookAppointmentLink" href="/booking.html">Book
+                tid</a></header>
+            <div class="business-day-nav" id="businessDayNav" hidden>
+                <button type="button" data-day-change="-1" aria-label="Forrige dag">←</button>
+                <p id="businessDayLabel"></p>
+                <button type="button" data-day-change="1" aria-label="Næste dag">→</button>
+            </div>
+            <div id="appointmentsList"><p class="empty-state">Dine kommende bookinger vises her.</p></div>
+        </section>
+        <section class="account-card" id="orders">
+            <header><h3>Ordrer</h3><a href="/shop.html">Se produkter</a></header>
+            <div id="ordersList"><p class="empty-state">Dine seneste ordrer vises her.</p></div>
+        </section>
+        <section class="account-card" id="businessSalesCard" hidden>
+            <header><h3>Solgte produkter</h3></header>
+            <div id="businessSalesList"><p class="empty-state">Dit salg vises her.</p></div>
+        </section>
+    </section>
+</main>
+</body>
+</html>

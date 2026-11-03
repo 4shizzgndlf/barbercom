@@ -1,0 +1,46 @@
+.account-page { background: var(--slate); }
+.account-layout { position: relative; display: block; min-height: 100vh; padding-top: 72px; overflow: hidden; }
+.account-layout::before,
+.account-layout::after { position: absolute; z-index: 0; width: 440px; height: 440px; border: 1px solid rgba(182, 41, 51, .15); border-radius: 50%; content: ""; pointer-events: none; }
+.account-layout::before { top: -250px; left: -170px; box-shadow: 0 0 0 48px rgba(182, 41, 51, .035), 0 0 0 96px rgba(182, 41, 51, .025); }
+.account-layout::after { right: -260px; bottom: -300px; background: rgba(182, 41, 51, .045); }
+.account-layout { position: relative; z-index: 1; }
+.account-content { width: min(100%, 970px); margin: 0 auto; padding: 58px clamp(28px, 6vw, 110px) 80px; }
+.account-card { border-radius: 14px; }
+#orders[hidden] { display: none; }
+.appointment-item { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 0; border-top: 1px solid var(--line); }
+.appointment-item:first-child { margin-top: 14px; border-top: 0; }
+.appointment-item .eyebrow { margin: 0 0 5px; }
+.appointment-item h4 { margin: 0; font: 1.15rem Georgia, serif; }
+.appointment-item time { border-radius: 999px; padding: 9px 13px; color: var(--red-dark); background: #f9e8e9; font-weight: 750; }
+.appointment-item__actions { display: flex; align-items: center; gap: 9px; }
+.appointment-item__actions button { border: 0; padding: 8px 10px; cursor: pointer; color: var(--muted); background: transparent; font-size: .75rem; text-decoration: underline; text-underline-offset: 3px; }
+.appointment-item__actions button:hover { color: var(--red); }
+.business-day-nav { display: grid; grid-template-columns: 42px 1fr 42px; align-items: center; gap: 12px; margin-top: 22px; }
+.business-day-nav[hidden], #bookAppointmentLink[hidden] { display: none; }
+.business-day-nav button { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 50%; cursor: pointer; color: var(--ink); background: #fff; font-size: 1.2rem; }
+.business-day-nav button:hover { border-color: var(--red); color: #fff; background: var(--red); }
+.business-day-nav p { margin: 0; color: var(--red-dark); font-size: .84rem; font-weight: 750; text-align: center; text-transform: capitalize; }
+.appointment-item--business { justify-content: flex-start; }
+.appointment-item--business > time { min-width: 62px; text-align: center; }
+.appointment-item--business h4 { margin-bottom: 5px; }
+.appointment-item--business p { margin: 0; color: var(--muted); font-size: .8rem; }
+.order-item { display: grid; grid-template-columns: 1fr auto; gap: 10px 20px; padding: 18px 0; border-top: 1px solid var(--line); }
+.order-item:first-child { margin-top: 14px; border-top: 0; }
+.order-item h4 { margin: 0 0 5px; font: 1.1rem Georgia, serif; }
+.order-item p { margin: 0; color: var(--muted); font-size: .8rem; line-height: 1.5; }
+.order-item strong { align-self: center; color: var(--red-dark); }
+.order-seller { display: block; margin-top: 3px; color: var(--red-dark); font-size: .75rem; }
+.sale-item { display: grid; grid-template-columns: 1fr auto; gap: 10px 20px; padding: 18px 0; border-top: 1px solid var(--line); }
+.sale-item:first-child { margin-top: 14px; border-top: 0; }
+.sale-item h4 { margin: 0 0 5px; font: 1.1rem Georgia, serif; }
+.sale-item p { margin: 0; color: var(--muted); font-size: .8rem; line-height: 1.5; }
+.sale-item strong { align-self: center; color: var(--red-dark); }
+
+@media (max-width: 720px) {
+    .account-layout { padding-top: 64px; }
+    .account-content { padding: 38px 16px 60px; }
+    .appointment-item { align-items: flex-start; }
+    .appointment-item__actions { align-items: flex-end; flex-direction: column; }
+    .business-day-nav { grid-template-columns: 38px 1fr 38px; gap: 8px; }
+}

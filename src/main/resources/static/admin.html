@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="icon" href="/images/favicon.svg">
+    <title>Dashboard | Barber.com</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/auth.css">
+    <script src="/js/nav.js" defer></script>
+    <script src="/js/footer.js" defer></script>
+    <script src="/js/admin.js" defer></script>
+</head>
+<body>
+<nav class="site-nav">
+    <div class="nav-side">
+        <button class="nav-control" type="button" data-menu-toggle><span class="menu-icon"></span><span class="menu-label">Menu</span></button>
+        <button class="nav-control" type="button" data-search-toggle><svg class="search-icon" viewBox="0 0 20 20" fill="none"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg><span class="search-label">Søg</span></button>
+    </div>
+    <a class="brand" href="/"><img class="logo-image" src="/images/barbercom-logo.png" alt="Barber.com"></a>
+    <div class="nav-side nav-side--right">
+        <button class="nav-control contact-control" type="button" data-contact-toggle><span class="contact-label">Kontakt os</span><svg class="nav-glyph contact-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 3h12v10H9l-4 4v-4H4z"/><path d="M7 7h6M7 10h4"/></svg></button>
+        <a class="nav-control icon-control" href="/account.html" aria-label="Min konto"><svg class="nav-glyph" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="6" r="3"/><path d="M4 18c.7-3.2 2.7-5 6-5s5.3 1.8 6 5"/></svg></a>
+        <button class="nav-control icon-control" type="button" data-cart-toggle aria-label="Indkøbskurv"><svg class="nav-glyph" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 3h2l2 10h9l2-7H5"/><circle cx="8" cy="17" r="1"/><circle cx="15" cy="17" r="1"/></svg><span class="cart-count" id="cartCount">0</span></button>
+    </div>
+</nav>
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<div class="menu-backdrop" id="rightBackdrop"></div>
+<aside class="side-menu" id="sideMenu"><div class="side-menu__top"><span class="side-menu__title">Barber.com</span><button class="close-menu" data-menu-close>×</button></div><label class="menu-search">Søg<input id="menuSearch"></label><nav class="menu-links"></nav><p class="side-menu__footer"></p></aside>
+<aside class="right-panel" id="contactPanel"><div class="panel-top"><h2>Kontakt os</h2><button class="close-menu" data-right-close>×</button></div><dl class="contact-details"></dl></aside>
+<aside class="right-panel" id="cartPanel"><div class="panel-top"><h2>Din kurv</h2><button class="close-menu" data-right-close>×</button></div><ul class="cart-items" id="cartItems"></ul><div class="cart-total"><span>I alt</span><span id="cartTotal">0,00 DKK</span></div></aside>
+
+<main class="admin-page">
+    <section class="admin-heading"><a class="back-link" href="/">← Tilbage til Barber.com</a><p class="eyebrow">Administration</p><h1>Dashboard</h1><p>Overblik over kunder, barbershops, ordrer, bookinger, omsætning og produkter.</p></section>
+    <section class="admin-stats">
+        <article><span>Brugere</span><strong id="userCount">–</strong></article>
+        <article><span>Barbershops</span><strong id="businessCount">–</strong></article>
+        <article><span>Ordrer</span><strong id="orderCount">–</strong></article>
+        <article><span>Bookinger</span><strong id="bookingCount">–</strong></article>
+        <article><span>Annulleringer</span><strong id="cancellationCount">–</strong></article>
+        <article><span>Samlet omsætning</span><strong id="revenue">–</strong></article>
+    </section>
+    <section class="admin-grid">
+        <article class="admin-card"><h2>Tilføj produkt</h2><form id="productForm"><input name="name" placeholder="Produktnavn" required><input name="description" placeholder="Kort beskrivelse"><input name="price" type="number" min="0" step="0.01" placeholder="Pris i DKK" required><input name="image" type="file" accept="image/*"><select name="category"><option>Styling</option><option>Hårpleje</option><option>Skæg</option><option>Sæt</option></select><select name="type"><option value="clay">Voks / clay</option><option value="spray">Spray</option><option value="shampoo">Shampoo</option><option value="oil">Olie</option><option value="gel">Gel</option><option value="set">Sæt</option></select><select name="sellerId" id="productSeller" required></select><button class="primary-button">Tilføj produkt</button></form></article>
+        <article class="admin-card"><h2>Tilføj barbershop</h2><form id="businessForm"><input name="businessName" placeholder="Virksomhedsnavn" required><input name="firstName" placeholder="Ejerens fornavn" required><input name="lastName" placeholder="Ejerens efternavn"><input name="email" type="email" placeholder="E-mail" required><input name="phoneNumber" type="tel" inputmode="numeric" pattern="[0-9]{8}" title="Skriv 8 cifre uden +45" placeholder="Telefonnummer (8 cifre)"><input name="address" placeholder="Adresse"><input name="zipCode" type="number" min="1000" max="9999" placeholder="Postnummer"><input name="password" type="password" placeholder="Adgangskode (valgfri)"><button class="primary-button">Tilføj barbershop</button></form></article>
+    </section>
+    <section class="admin-list-card"><h2>Produkter administreret her</h2><div id="productList"></div></section>
+    <section class="admin-grid"><section class="admin-list-card"><h2>Alle brugere</h2><div id="userList"></div></section><section class="admin-list-card"><h2>Barbershops</h2><div id="businessList"></div></section></section>
+</main>
+</body>
+</html>

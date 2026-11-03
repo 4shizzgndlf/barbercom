@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+    <title>Journal | Barber.com</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/auth.css">
+    <script src="/js/nav.js" defer></script>
+    <script src="/js/footer.js" defer></script>
+    <script src="/js/article.js" defer></script>
+</head>
+<body>
+<nav class="site-nav" aria-label="Hovedmenu">
+    <div class="nav-side"><button class="nav-control" type="button" data-menu-toggle aria-expanded="false" aria-controls="sideMenu"><span class="menu-icon" aria-hidden="true"></span><span class="menu-label">Menu</span></button><button class="nav-control" type="button" data-search-toggle><svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true" fill="none"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg><span class="search-label">Søg</span></button></div>
+    <a class="brand" href="/" aria-label="Barber.com forside"><img class="logo-image" src="/images/barbercom-logo.png" alt="Barber.com"></a>
+    <div class="nav-side nav-side--right"><button class="nav-control contact-control" type="button" data-contact-toggle aria-label="Kontakt os"><span class="contact-label">Kontakt os</span><svg class="nav-glyph contact-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 3h12v10H9l-4 4v-4H4z"/><path d="M7 7h6M7 10h4"/></svg></button><a class="nav-control icon-control" href="/account.html" aria-label="Min konto"><svg class="nav-glyph" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="6" r="3"/><path d="M4 18c.7-3.2 2.7-5 6-5s5.3 1.8 6 5"/></svg></a><button class="nav-control icon-control" type="button" data-cart-toggle aria-label="Indkøbskurv"><svg class="nav-glyph" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 3h2l2 10h9l2-7H5"/><circle cx="8" cy="17" r="1"/><circle cx="15" cy="17" r="1"/></svg><span class="cart-count" id="cartCount">0</span></button></div>
+</nav>
+<div class="menu-backdrop" id="menuBackdrop"></div><div class="menu-backdrop" id="rightBackdrop"></div>
+<aside class="side-menu" id="sideMenu" aria-hidden="true"><div class="side-menu__top"><span class="side-menu__title">Barber.com</span><button class="close-menu" type="button" data-menu-close aria-label="Luk menu">×</button></div><label class="menu-search" for="menuSearch"><svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true" fill="none"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg><input id="menuSearch" type="search" placeholder="Søg på Barber.com"></label><nav class="menu-links"></nav><p class="side-menu__footer"></p></aside>
+<aside class="right-panel" id="contactPanel"><div class="panel-top"><h2>Kontakt os</h2><button class="close-menu" type="button" data-right-close>×</button></div><dl class="contact-details"><div><dt>E-mail</dt><dd>hello@barber.com</dd></div><div><dt>Telefon</dt><dd>+45 12 34 56 78</dd></div><div><dt>Besøg os</dt><dd>Vesterbrogade 181<br>1800 Frederiksberg</dd></div></dl></aside>
+<aside class="right-panel" id="cartPanel"><div class="panel-top"><h2>Din kurv</h2><button class="close-menu" type="button" data-right-close>×</button></div><ul class="cart-items" id="cartItems"></ul><div class="cart-total"><span>I alt</span><span id="cartTotal">0.00 DKK</span></div></aside>
+<main class="article-page" id="articlePage"></main>
+</body>
+</html>
