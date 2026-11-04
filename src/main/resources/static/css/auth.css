@@ -172,6 +172,9 @@ body.menu-open { overflow: hidden; }
 .homepage-placement{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:.78rem;white-space:nowrap}.homepage-placement select{min-height:34px;border:1px solid var(--line);border-radius:5px;padding:0 7px;background:#fff;font:inherit;color:var(--ink);cursor:pointer}.homepage-placement select:focus{outline:2px solid rgba(182,41,51,.25);border-color:var(--red)}
 @media(max-width:720px){.admin-row{align-items:flex-start;flex-wrap:wrap}.homepage-placement{margin-left:auto}}
 
+/* Keep dashboard forms within the viewport and make product controls easy to scan. */
+.admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-card,.admin-list-card{min-width:0}.admin-card input,.admin-card select{width:100%;max-width:100%}.product-admin-row{display:grid;grid-template-columns:minmax(0,1fr);justify-content:initial;align-items:start;gap:10px}.product-admin-row__details b,.product-admin-row__details small{display:block}.product-admin-row .homepage-placement{justify-content:space-between;width:100%;margin:0}.product-admin-row button{justify-self:start}@media(max-width:860px){.admin-grid{grid-template-columns:1fr}}
+
 .auth-page::before,
 .auth-page::after {
     position: absolute;
