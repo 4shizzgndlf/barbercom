@@ -34,3 +34,4 @@ build/
 .vscode/
 .env
 deploy/.env
+barbercomdb-backup.sql
