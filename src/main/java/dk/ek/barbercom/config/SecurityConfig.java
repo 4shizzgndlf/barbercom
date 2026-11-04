@@ -90,6 +90,7 @@ public class SecurityConfig {
                         // Visitors may browse the catalogue without an account.
                         .requestMatchers(HttpMethod.GET,
                                 "/api/products/**",
+                                "/api/catalog/products",
                                 "/api/services/**",
                                 "/api/barbers").permitAll()
 
