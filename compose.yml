@@ -18,9 +18,12 @@ services:
       BARBERCOM_MAIL_FROM: ${BARBERCOM_MAIL_FROM:-no-reply@barber.com}
       BREVO_API_KEY: ${BREVO_API_KEY:-}
       BARBERCOM_SMS_SENDER: ${BARBERCOM_SMS_SENDER:-BarberCom}
+      BARBERCOM_PRODUCT_IMAGE_DIRECTORY: /app/uploads
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - product-uploads:/app/uploads
 
   mailpit:
     image: axllent/mailpit:latest
@@ -49,3 +52,4 @@ services:
 
 volumes:
   barbercom-data:
+  product-uploads:

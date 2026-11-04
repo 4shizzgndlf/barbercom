@@ -13,6 +13,7 @@ import java.nio.file.*;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,9 +29,11 @@ public class AdminController {
     private final BookingCancellationRepository cancellations;
     private final ShopProductRepository products;
     private final PasswordEncoder passwordEncoder;
+    private final Path productImageDirectory;
 
-    public AdminController(UserRepository users, CustomerOrderRepository orders, BookingRepository bookings, BookingCancellationRepository cancellations, ShopProductRepository products, PasswordEncoder passwordEncoder) {
+    public AdminController(UserRepository users, CustomerOrderRepository orders, BookingRepository bookings, BookingCancellationRepository cancellations, ShopProductRepository products, PasswordEncoder passwordEncoder, @Value("${barbercom.product-image-directory:uploads}") String productImageDirectory) {
         this.users = users; this.orders = orders; this.bookings = bookings; this.cancellations = cancellations; this.products = products; this.passwordEncoder = passwordEncoder;
+        this.productImageDirectory = Paths.get(productImageDirectory).toAbsolutePath().normalize();
     }
 
     @GetMapping("/api/catalog/products")
@@ -113,7 +116,22 @@ public class AdminController {
 
     private void requireAdmin(UserDetails principal) { User user = users.findByEmail(principal.getUsername()).orElseThrow(); if (user.getRole() != Role.ADMIN) throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN, "Kun administratorer har adgang."); }
     private CatalogProductDTO toDto(ShopProduct product) { User seller = product.getSeller(); String name = seller.getBusinessName() == null || seller.getBusinessName().isBlank() ? seller.getFirstName() + " " + seller.getLastName() : seller.getBusinessName(); return new CatalogProductDTO(product.getId(), product.getName(), product.getDescription(), product.getPrice(), product.getCategory(), product.getType(), product.getImageUrl(), seller.getId(), name, product.getHomepageSlider()); }
-    private String storeImage(MultipartFile image) { try { if (!image.getContentType().startsWith("image/")) throw new IllegalArgumentException("Vælg en billedfil."); String original = image.getOriginalFilename(); String extension = original != null && original.contains(".") ? original.substring(original.lastIndexOf('.')) : ".png"; String fileName = "product-upload-" + UUID.randomUUID() + extension; Path source = Paths.get("src/main/resources/static/images", fileName); Files.createDirectories(source.getParent()); Files.copy(image.getInputStream(), source, StandardCopyOption.REPLACE_EXISTING); Path running = Paths.get("target/classes/static/images", fileName); Files.createDirectories(running.getParent()); Files.copy(source, running, StandardCopyOption.REPLACE_EXISTING); return "/images/" + fileName; } catch (Exception error) { throw new IllegalArgumentException("Billedet kunne ikke gemmes."); } }
+    private String storeImage(MultipartFile image) {
+        try {
+            if (image.getContentType() == null || !image.getContentType().startsWith("image/")) throw new IllegalArgumentException("Vælg en billedfil.");
+            String original = image.getOriginalFilename();
+            String extension = original != null && original.contains(".") ? original.substring(original.lastIndexOf('.')).toLowerCase() : ".png";
+            if (!List.of(".png", ".jpg", ".jpeg", ".webp", ".gif").contains(extension)) throw new IllegalArgumentException("Billedformatet understøttes ikke.");
+            String fileName = "product-upload-" + UUID.randomUUID() + extension;
+            Files.createDirectories(productImageDirectory);
+            Files.copy(image.getInputStream(), productImageDirectory.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/" + fileName;
+        } catch (IllegalArgumentException error) {
+            throw error;
+        } catch (Exception error) {
+            throw new IllegalArgumentException("Billedet kunne ikke gemmes.");
+        }
+    }
     private String blankOr(String value, String fallback) { return value == null || value.isBlank() ? fallback : value.trim(); }
     private String validType(String value) { return List.of("clay", "spray", "paste", "shampoo", "pomade", "powder", "oil", "tonic", "gel", "set").contains(value) ? value : "clay"; }
 

@@ -19,9 +19,12 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      BARBERCOM_PRODUCT_IMAGE_DIRECTORY: /app/uploads
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - product-uploads:/app/uploads
 
   db:
     image: mysql:8.4
@@ -44,3 +47,4 @@ volumes:
   barbercom-data:
   caddy-data:
   caddy-config:
+  product-uploads:
