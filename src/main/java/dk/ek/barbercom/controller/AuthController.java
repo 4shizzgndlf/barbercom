@@ -4,6 +4,8 @@ package dk.ek.barbercom.controller;
 import dk.ek.barbercom.dto.UserDTO;
 import dk.ek.barbercom.model.Role;
 import dk.ek.barbercom.service.UserService;
+import dk.ek.barbercom.service.BusinessSubscriptionService;
+import dk.ek.barbercom.service.RegistrationNotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
@@ -22,9 +25,14 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService userService;
+    private final BusinessSubscriptionService businessSubscriptions;
+    private final RegistrationNotificationService registrationNotifications;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, BusinessSubscriptionService businessSubscriptions,
+            RegistrationNotificationService registrationNotifications) {
         this.userService = userService;
+        this.businessSubscriptions = businessSubscriptions;
+        this.registrationNotifications = registrationNotifications;
     }
 
     @GetMapping("/login")
@@ -52,11 +60,21 @@ public class AuthController {
     @PostMapping("/api/auth/register")
     public ResponseEntity<?> registerApiUser(@RequestBody UserDTO userDTO) {
         try {
+            if (userDTO.role() == Role.BUSINESS) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(businessSubscriptions.startRegistration(userDTO));
+            }
             UserDTO createdUser = userService.createUser(userDTO);
+            registrationNotifications.sendPrivateAccountConfirmation(createdUser);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(new ErrorResponse(e.getMessage()));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(new ErrorResponse(e.getReason()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(new ErrorResponse("Kunne ikke starte Stripe-betalingen. Prøv igen."));
         }
     }
 

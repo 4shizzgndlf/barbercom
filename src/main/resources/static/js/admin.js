@@ -30,7 +30,7 @@ function render() {
         return `<div class="admin-row"><span><b>${business.businessName}</b><small>${business.firstName} ${business.lastName}</small><small>${contact}</small></span><button data-delete-barber="${business.id}">Fjern</button></div>`;
     }).join("");
     document.querySelector("#productList").innerHTML = dashboard.products.length
-        ? dashboard.products.map(product => `<div class="admin-row"><span><b>${product.name}</b><small>${product.sellerName} · ${money(product.price)}</small></span><button data-delete-product="${product.id}">Fjern</button></div>`).join("")
+        ? dashboard.products.map(product => `<div class="admin-row"><span><b>${product.name}</b><small>${product.sellerName} · ${money(product.price)}</small></span><label class="homepage-placement">Forside<select data-homepage-product="${product.id}"><option value="0" ${product.homepageSlider === 0 ? "selected" : ""}>Vis ikke</option><option value="1" ${product.homepageSlider === 1 ? "selected" : ""}>Slider 1</option><option value="2" ${product.homepageSlider === 2 ? "selected" : ""}>Slider 2</option></select></label><button data-delete-product="${product.id}">Fjern</button></div>`).join("")
         : '<p class="empty-state">Ingen produkter er tilføjet fra dashboardet endnu.</p>';
 }
 
@@ -79,6 +79,17 @@ document.addEventListener("click", async event => {
         load();
     } catch (error) {
         alert(error.message);
+    }
+});
+
+document.addEventListener("change", async event => {
+    const productId = event.target.dataset.homepageProduct;
+    if (!productId) return;
+    try {
+        await request(`/api/admin/products/${productId}/homepage?slider=${event.target.value}`, { method: "PUT" });
+    } catch (error) {
+        alert(error.message);
+        load();
     }
 });
 

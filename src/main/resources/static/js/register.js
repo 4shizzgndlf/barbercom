@@ -3,10 +3,14 @@ const registerForm = document.getElementById("registerForm");
 const message = document.getElementById("message");
 const businessNameField = document.getElementById("businessNameField");
 const businessNameInput = document.getElementById("businessName");
+const businessSubscriptionNotice = document.getElementById("businessSubscriptionNotice");
+const submitButton = registerForm.querySelector('button[type="submit"]');
 
 function updateAccountType() {
     const isBusiness = registerForm.elements.role.value === "BUSINESS";
     businessNameField.hidden = !isBusiness;
+    businessSubscriptionNotice.hidden = !isBusiness;
+    submitButton.textContent = isBusiness ? "Fortsæt til betaling · 199 DKK/md." : "Opret konto";
     businessNameInput.required = isBusiness;
     if (!isBusiness) businessNameInput.value = "";
 }
@@ -17,6 +21,10 @@ registerForm.querySelectorAll('input[name="role"]').forEach(input => {
 
 // Keep the company field hidden for the default private account selection.
 updateAccountType();
+
+if (new URLSearchParams(window.location.search).get("businessSubscription") === "cancelled") {
+    message.textContent = "Betalingen blev annulleret. Din business-konto blev ikke oprettet.";
+}
 
 function getCsrfToken() {
     return document.cookie
@@ -69,12 +77,17 @@ registerForm.addEventListener("submit", async (event) => {
             body: JSON.stringify(data)
         });
 
+        const result = await response.json().catch(() => ({}));
+
+        if (response.ok && result.checkoutUrl) {
+            window.location.assign(result.checkoutUrl);
+            return;
+        }
+
         if (response.ok) {
             window.location.href = "/login.html?registered";
             return;
         }
-
-        const result = await response.json().catch(() => ({}));
 
         message.textContent =
             result.message || "Oprettelse mislykkedes. Kontrollér dine oplysninger.";

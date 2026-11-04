@@ -2,6 +2,10 @@
 const form = document.querySelector("#loginForm");
 const message = document.querySelector("#message");
 
+if (new URLSearchParams(window.location.search).get("businessSubscription") === "success") {
+    message.textContent = "Tak for din betaling. Din business-konto er nu aktiveret — du kan logge ind.";
+}
+
 function csrfToken() {
     return document.cookie
         .split("; ")

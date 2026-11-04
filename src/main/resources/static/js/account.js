@@ -5,6 +5,7 @@ const businessDayNav = document.querySelector("#businessDayNav");
 const businessDayLabel = document.querySelector("#businessDayLabel");
 let currentUser;
 let selectedBusinessDate = new Date();
+const paymentSuccess = new URLSearchParams(window.location.search).get("payment") === "success";
 
 function csrfToken() {
     return document.cookie.split("; ").find(value => value.startsWith("XSRF-TOKEN="))?.split("=").slice(1).join("=");
@@ -160,6 +161,14 @@ profileForm.addEventListener("submit", async event => {
 async function initializeAccount() {
     currentUser = await loadProfile();
     if (!currentUser) return;
+    if (paymentSuccess) {
+        await window.BarberCart?.ready;
+        window.BarberCart?.clear();
+        const message = document.querySelector("#paymentSuccessMessage");
+        message.hidden = false;
+        message.textContent = "Tak for din handel! Din betaling er gennemført, og ordren vises nedenfor.";
+        window.history.replaceState({}, "", "/account.html");
+    }
     if (currentUser.role === "BUSINESS") {
         document.querySelector("#appointmentsTitle").textContent = "Virksomhedens bookinger";
         document.querySelector("#bookAppointmentLink").hidden = true;
@@ -171,6 +180,7 @@ async function initializeAccount() {
         await loadCustomerAppointments();
     }
     await loadOrders();
+    if (paymentSuccess) window.setTimeout(loadOrders, 1500);
 }
 
 initializeAccount();

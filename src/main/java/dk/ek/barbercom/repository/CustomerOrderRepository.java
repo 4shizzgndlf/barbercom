@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Long> {
     List<CustomerOrder> findByCustomerIdOrderByPurchasedAtDesc(Long customerId);
+    java.util.Optional<CustomerOrder> findByStripeCheckoutSessionId(String stripeCheckoutSessionId);
 
     @Query("select distinct o from CustomerOrder o join fetch o.items order by o.purchasedAt desc")
     List<CustomerOrder> findAllWithItems();

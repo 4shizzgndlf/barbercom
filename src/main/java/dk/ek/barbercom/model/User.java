@@ -17,6 +17,10 @@ public class User {
     private String address;
     private Integer zipCode;
     private String businessName;
+    private String businessSubscriptionStatus;
+    private String businessSubscriptionCheckoutSessionId;
+    private String stripeSubscriptionId;
+    private boolean businessSubscriptionConfirmationEmailSent;
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -102,6 +106,18 @@ public class User {
 
     public void setBusinessName(String businessName) {
         this.businessName = businessName;
+    }
+
+    public String getBusinessSubscriptionStatus() { return businessSubscriptionStatus; }
+    public void setBusinessSubscriptionStatus(String businessSubscriptionStatus) { this.businessSubscriptionStatus = businessSubscriptionStatus; }
+    public String getBusinessSubscriptionCheckoutSessionId() { return businessSubscriptionCheckoutSessionId; }
+    public void setBusinessSubscriptionCheckoutSessionId(String value) { this.businessSubscriptionCheckoutSessionId = value; }
+    public String getStripeSubscriptionId() { return stripeSubscriptionId; }
+    public void setStripeSubscriptionId(String value) { this.stripeSubscriptionId = value; }
+    public boolean isBusinessSubscriptionConfirmationEmailSent() { return businessSubscriptionConfirmationEmailSent; }
+    public void setBusinessSubscriptionConfirmationEmailSent(boolean value) { this.businessSubscriptionConfirmationEmailSent = value; }
+    public boolean hasActiveBusinessSubscription() {
+        return role != Role.BUSINESS || businessSubscriptionStatus == null || "ACTIVE".equals(businessSubscriptionStatus);
     }
 
     public void setZipCode(Integer zipCode) {

@@ -23,23 +23,31 @@ purchaseButton.addEventListener("click", async () => {
     const token = csrfToken();
     if (!items.length || !token) return;
     purchaseButton.disabled = true;
-    checkoutMessage.textContent = "Gennemfører dit køb…";
+    checkoutMessage.textContent = "Åbner sikker betaling…";
     try {
-        const response = await fetch("/api/orders", {
+        const response = await fetch("/api/checkout/session", {
             method: "POST",
             headers: { "Content-Type": "application/json", "X-XSRF-TOKEN": decodeURIComponent(token) },
             credentials: "same-origin",
             body: JSON.stringify({ items })
         });
         if (!response.ok) throw new Error(await response.text());
-        window.BarberCart.clear();
-        checkoutMessage.textContent = "Tak for dit køb. Din ordre ligger nu under Ordrer på din konto.";
-        purchaseButton.hidden = true;
+        const session = await response.json();
+        window.location.assign(session.url);
     } catch (error) {
         checkoutMessage.textContent = error.message || "Kunne ikke gennemføre købet. Prøv igen.";
         purchaseButton.disabled = false;
     }
 });
+
+const parameters = new URLSearchParams(window.location.search);
+if (parameters.get("success") === "1") {
+    window.BarberCart.clear();
+    checkoutMessage.textContent = "Betalingen er modtaget. Din ordre bekræftes automatisk af Stripe.";
+    purchaseButton.hidden = true;
+} else if (parameters.get("cancelled") === "1") {
+    checkoutMessage.textContent = "Betalingen blev annulleret. Din kurv er stadig gemt.";
+}
 
 renderCheckout();
 window.addEventListener("cart-ready", renderCheckout);

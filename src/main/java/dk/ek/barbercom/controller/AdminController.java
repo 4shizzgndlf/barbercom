@@ -11,6 +11,7 @@ import dk.ek.barbercom.repository.UserRepository;
 import java.math.BigDecimal;
 import java.nio.file.*;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -40,8 +41,10 @@ public class AdminController {
         requireAdmin(principal);
         List<UserDTO> allUsers = users.findAll().stream().map(UserMapper::toDTO).toList();
         List<UserDTO> businesses = users.findByRoleOrderByIdAsc(Role.BUSINESS).stream().map(UserMapper::toDTO).toList();
-        BigDecimal revenue = orders.findAll().stream().map(CustomerOrder::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-        return new AdminDashboardDTO(allUsers.size(), businesses.size(), orders.count(), bookings.count(), cancellations.count(), revenue, allUsers, businesses, products.findAll().stream().map(this::toDto).toList());
+        BigDecimal revenue = orders.findAll().stream().filter(CustomerOrder::isPaid)
+                .map(CustomerOrder::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        long paidOrderCount = orders.findAll().stream().filter(CustomerOrder::isPaid).count();
+        return new AdminDashboardDTO(allUsers.size(), businesses.size(), paidOrderCount, bookings.count(), cancellations.count(), revenue, allUsers, businesses, products.findAll().stream().map(this::toDto).toList());
     }
 
     @PostMapping(value = "/api/admin/products", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -55,9 +58,42 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(products.save(product)));
     }
 
+    @PostMapping("/api/admin/products/import-standard")
+    public ResponseEntity<?> importStandardProducts(@AuthenticationPrincipal UserDetails principal) {
+        requireAdmin(principal);
+        List<User> businesses = users.findByRoleOrderByIdAsc(Role.BUSINESS);
+        if (businesses.isEmpty()) return ResponseEntity.badRequest().body("Opret mindst én barbershop først.");
+        List<String> existingNames = products.findAll().stream().map(product -> product.getName().toLowerCase()).toList();
+        List<ShopProduct> imported = new java.util.ArrayList<>();
+        int businessIndex = 0;
+        for (StandardProduct standard : STANDARD_PRODUCTS) {
+            if (existingNames.contains(standard.name().toLowerCase())) continue;
+            ShopProduct product = new ShopProduct();
+            product.setName(standard.name());
+            product.setDescription(standard.description());
+            product.setPrice(standard.price());
+            product.setCategory(standard.category());
+            product.setType(standard.type());
+            product.setSeller(businesses.get(businessIndex++ % businesses.size()));
+            imported.add(product);
+        }
+        products.saveAll(imported);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("count", imported.size()));
+    }
+
     @DeleteMapping("/api/admin/products/{id}")
     public ResponseEntity<Void> removeProduct(@AuthenticationPrincipal UserDetails principal, @PathVariable Long id) {
         requireAdmin(principal); if (!products.existsById(id)) return ResponseEntity.notFound().build(); products.deleteById(id); return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/api/admin/products/{id}/homepage")
+    public ResponseEntity<?> setHomepageSlider(@AuthenticationPrincipal UserDetails principal, @PathVariable Long id, @RequestParam int slider) {
+        requireAdmin(principal);
+        if (slider < 0 || slider > 2) return ResponseEntity.badRequest().body("Vælg en gyldig placering på forsiden.");
+        ShopProduct product = products.findById(id).orElse(null);
+        if (product == null) return ResponseEntity.notFound().build();
+        product.setHomepageSlider(slider);
+        return ResponseEntity.ok(toDto(products.save(product)));
     }
 
     @PostMapping("/api/admin/barbers")
@@ -76,8 +112,33 @@ public class AdminController {
     }
 
     private void requireAdmin(UserDetails principal) { User user = users.findByEmail(principal.getUsername()).orElseThrow(); if (user.getRole() != Role.ADMIN) throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN, "Kun administratorer har adgang."); }
-    private CatalogProductDTO toDto(ShopProduct product) { User seller = product.getSeller(); String name = seller.getBusinessName() == null || seller.getBusinessName().isBlank() ? seller.getFirstName() + " " + seller.getLastName() : seller.getBusinessName(); return new CatalogProductDTO(product.getId(), product.getName(), product.getDescription(), product.getPrice(), product.getCategory(), product.getType(), product.getImageUrl(), seller.getId(), name); }
+    private CatalogProductDTO toDto(ShopProduct product) { User seller = product.getSeller(); String name = seller.getBusinessName() == null || seller.getBusinessName().isBlank() ? seller.getFirstName() + " " + seller.getLastName() : seller.getBusinessName(); return new CatalogProductDTO(product.getId(), product.getName(), product.getDescription(), product.getPrice(), product.getCategory(), product.getType(), product.getImageUrl(), seller.getId(), name, product.getHomepageSlider()); }
     private String storeImage(MultipartFile image) { try { if (!image.getContentType().startsWith("image/")) throw new IllegalArgumentException("Vælg en billedfil."); String original = image.getOriginalFilename(); String extension = original != null && original.contains(".") ? original.substring(original.lastIndexOf('.')) : ".png"; String fileName = "product-upload-" + UUID.randomUUID() + extension; Path source = Paths.get("src/main/resources/static/images", fileName); Files.createDirectories(source.getParent()); Files.copy(image.getInputStream(), source, StandardCopyOption.REPLACE_EXISTING); Path running = Paths.get("target/classes/static/images", fileName); Files.createDirectories(running.getParent()); Files.copy(source, running, StandardCopyOption.REPLACE_EXISTING); return "/images/" + fileName; } catch (Exception error) { throw new IllegalArgumentException("Billedet kunne ikke gemmes."); } }
     private String blankOr(String value, String fallback) { return value == null || value.isBlank() ? fallback : value.trim(); }
     private String validType(String value) { return List.of("clay", "spray", "paste", "shampoo", "pomade", "powder", "oil", "tonic", "gel", "set").contains(value) ? value : "clay"; }
+
+    private record StandardProduct(String name, String description, BigDecimal price, String category, String type) { }
+
+    private static final List<StandardProduct> STANDARD_PRODUCTS = List.of(
+            new StandardProduct("Mat clay", "Teksturerende clay med naturligt hold", new BigDecimal("189"), "Styling", "clay"),
+            new StandardProduct("Havsaltspray", "Teksturspray med let volumen", new BigDecimal("149"), "Styling", "spray"),
+            new StandardProduct("Sculpt paste", "Fleksibelt hold til hverdagsstyling", new BigDecimal("179"), "Styling", "paste"),
+            new StandardProduct("Daglig shampoo", "Ren og frisk pleje til hver dag", new BigDecimal("139"), "Hårpleje", "shampoo"),
+            new StandardProduct("Finish pomade", "Naturlig glans og klassisk finish", new BigDecimal("199"), "Styling", "pomade"),
+            new StandardProduct("Volumenpudder", "Løft ved rødderne med mat finish", new BigDecimal("159"), "Styling", "powder"),
+            new StandardProduct("Skægolie", "Blødgør og plejer skægget", new BigDecimal("169"), "Skæg", "oil"),
+            new StandardProduct("Hårtonic", "Frisk pleje til hovedbunden", new BigDecimal("129"), "Hårpleje", "tonic"),
+            new StandardProduct("Stærkt hold", "Definerende gel med stærkt hold", new BigDecimal("149"), "Styling", "gel"),
+            new StandardProduct("Rejsesæt", "Hverdagens essentials i rejseformat", new BigDecimal("249"), "Sæt", "set"),
+            new StandardProduct("Curl cream", "Bløde og definerede krøller", new BigDecimal("179"), "Styling", "paste"),
+            new StandardProduct("Pre-shave oil", "En behagelig og tæt barbering", new BigDecimal("159"), "Skæg", "oil"),
+            new StandardProduct("Skægbalm", "Form og fugt til skægget", new BigDecimal("169"), "Skæg", "pomade"),
+            new StandardProduct("Cooling tonic", "Frisk finish til hovedbunden", new BigDecimal("139"), "Hårpleje", "tonic"),
+            new StandardProduct("Fiber wax", "Stærkt og naturligt hold", new BigDecimal("189"), "Styling", "clay"),
+            new StandardProduct("Conditioner", "Plejende hverdagsrutine", new BigDecimal("149"), "Hårpleje", "shampoo"),
+            new StandardProduct("Barber brush", "Klassisk påføring til barbering", new BigDecimal("219"), "Værktøj", "set"),
+            new StandardProduct("Aftershave mist", "Kølig og rolig hud efter barbering", new BigDecimal("159"), "Skæg", "spray"),
+            new StandardProduct("Texture dust", "Let volumen hele dagen", new BigDecimal("169"), "Styling", "powder"),
+            new StandardProduct("Grooming kit", "Alt til din daglige rutine", new BigDecimal("299"), "Sæt", "set")
+    );
 }

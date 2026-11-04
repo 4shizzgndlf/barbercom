@@ -2,6 +2,7 @@
 package dk.ek.barbercom.config;
 
 import dk.ek.barbercom.repository.UserRepository;
+import dk.ek.barbercom.service.BusinessSubscriptionService;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,17 +28,21 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService(
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            BusinessSubscriptionService businessSubscriptions) {
 
-        return email -> userRepository
+        return email -> {
+            businessSubscriptions.reconcilePendingSubscription(email);
+            return userRepository
                 .findByEmail(email.trim().toLowerCase())
                 .map(user -> User.withUsername(user.getEmail())
                         .password(user.getPassword())
                         .roles(user.getRole().name())
+                        .disabled(user.getRole() == dk.ek.barbercom.model.Role.BUSINESS && !user.hasActiveBusinessSubscription())
                         .build())
                 .orElseThrow(() ->
-                        new UsernameNotFoundException(
-                                "Bruger blev ikke fundet: " + email));
+                        new UsernameNotFoundException("Bruger blev ikke fundet: " + email));
+        };
     }
 
     @Bean
@@ -54,6 +59,10 @@ public class SecurityConfig {
                         // flows, but let the already role-protected admin API
                         // handle its own multipart posts without a token mismatch.
                         .ignoringRequestMatchers("/api/admin/**")
+                        // Stripe signs its webhook requests instead of using our
+                        // browser CSRF cookie, so signature verification happens
+                        // in StripeWebhookController.
+                        .ignoringRequestMatchers("/api/stripe/webhook")
                         // Accept the raw token that JavaScript reads from the cookie.
                         .csrfTokenRequestHandler(
                                 new CsrfTokenRequestAttributeHandler()))
@@ -70,6 +79,7 @@ public class SecurityConfig {
                                 "/article.html",
                                 "/api/auth/register",
                                 "/api/auth/status",
+                                "/api/stripe/webhook",
                                 "/products/**",
                                 "/services/**",
                                 "/css/**",
@@ -90,6 +100,7 @@ public class SecurityConfig {
                                 "/bookings/**",
                                 "/appointments/**",
                                 "/api/orders/**",
+                                "/api/checkout/**",
                                 "/api/bookings/**",
                                 "/api/appointments/**"
                         ).authenticated()

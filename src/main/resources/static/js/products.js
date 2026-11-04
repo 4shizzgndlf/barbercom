@@ -1,73 +1,90 @@
-const homeProducts = Object.values(window.barberProducts).flat().map(([id, name, description, price, type]) => ({
-    id, name, description, price, type,
-    category: window.barberProductMeta[id]?.[0] || "Produkt",
-    barber: "Din lokale barber", barberId: null
-}));
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>'"]/g, character => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+    }[character]));
+}
 
 function createSlider(products, gridId, pageId, previousId, nextId) {
     const grid = document.querySelector(gridId);
     const label = document.querySelector(pageId);
+    const previous = document.querySelector(previousId);
+    const next = document.querySelector(nextId);
     let page = 0;
 
     function render() {
+        const pageCount = Math.ceil(products.length / 5);
+        if (!pageCount) {
+            grid.innerHTML = '<p class="empty-state">Ingen produkter er tilføjet endnu.</p>';
+            label.textContent = "0 / 0";
+            previous.disabled = next.disabled = true;
+            return;
+        }
+        page = Math.min(page, pageCount - 1);
         const pageProducts = products.slice(page * 5, page * 5 + 5);
         grid.innerHTML = pageProducts.map(product =>
-            `<article class="product-card" data-product-link="/product.html?id=${product.id}&seller=${product.barberId || ""}" tabindex="0" role="link">
-                <div class="product-art ${product.type}"><img src="${window.barberProductImages[product.type]}" alt="${product.name}"></div>
-                <div class="shop-product-card__meta"><span>${product.barber}</span><span>${product.category}</span></div>
-                <h3>${product.name}</h3><b>${product.price} DKK</b>
-                <p>${product.description}</p>
+            `<article class="product-card" data-product-link="/product.html?id=${product.id}&seller=${product.barberId}" tabindex="0" role="link">
+                <div class="product-art ${escapeHtml(product.type)}"><img src="${escapeHtml(product.imageUrl || window.barberProductImages[product.type])}" alt="${escapeHtml(product.name)}"></div>
+                <div class="shop-product-card__meta"><span>${escapeHtml(product.barber)}</span><span>${escapeHtml(product.category)}</span></div>
+                <h3>${escapeHtml(product.name)}</h3><b>${Number(product.price).toFixed(2).replace(".", ",")} DKK</b>
+                <p>${escapeHtml(product.description)}</p>
                 <button data-product="${product.id}">Læg i kurv</button>
             </article>`
         ).join("");
-        label.textContent = `${page + 1} / ${Math.ceil(products.length / 5)}`;
+        label.textContent = `${page + 1} / ${pageCount}`;
+        previous.disabled = next.disabled = false;
     }
 
-    document.querySelector(previousId).onclick = document.querySelector(nextId).onclick = () => {
+    previous.onclick = next.onclick = () => {
+        if (!products.length) return;
         page = page ? 0 : Math.ceil(products.length / 5) - 1;
         render();
     };
     grid.onclick = event => {
         const button = event.target.closest("[data-product]");
-        if (!button) return;
-        const product = products.find(item => item.id === button.dataset.product);
-        const cart = window.BarberCart.get();
-        const existing = cart.find(item => item.name === product.name && item.sellerId === product.barberId);
-        existing ? existing.quantity++ : cart.push({ name: product.name, price: product.price, quantity: 1, sellerId: product.barberId });
-        if (!window.BarberCart.save(cart)) return;
-        button.textContent = "Tilføjet";
-    };
-    grid.addEventListener("click", event => {
-        if (event.target.closest("button")) return;
+        if (button) {
+            const product = products.find(item => item.id === button.dataset.product);
+            const cart = window.BarberCart.get();
+            const existing = cart.find(item => item.name === product.name && item.sellerId === product.barberId);
+            existing ? existing.quantity++ : cart.push({ name: product.name, price: product.price, quantity: 1, sellerId: product.barberId });
+            if (!window.BarberCart.save(cart)) return;
+            button.textContent = "Tilføjet";
+            return;
+        }
         const card = event.target.closest("[data-product-link]");
         if (card) window.location.href = card.dataset.productLink;
-    });
+    };
     grid.addEventListener("keydown", event => {
         if (event.key === "Enter" && event.target.matches("[data-product-link]")) window.location.href = event.target.dataset.productLink;
     });
     render();
-    return render;
 }
 
-const renderEssentials = createSlider(homeProducts.slice(0, 10), "#productGrid", "#productPage", "#productsPrevious", "#productsNext");
-const renderSelection = createSlider(homeProducts.slice(10), "#secondaryProductGrid", "#secondaryProductPage", "#secondaryProductsPrevious", "#secondaryProductsNext");
-
-async function loadHomeBarbers() {
+async function loadHomeProducts() {
     try {
-        const response = await fetch("/api/barbers");
-        if (!response.ok) return;
-        const barbers = await response.json();
-        if (!barbers.length) return;
-        homeProducts.forEach((product, index) => {
-            const barber = barbers[index % barbers.length];
-            product.barber = barber.displayName;
-            product.barberId = barber.id;
-        });
-        renderEssentials();
-        renderSelection();
+        const response = await fetch("/api/catalog/products");
+        if (!response.ok) throw new Error();
+        const products = (await response.json()).map(product => ({
+            id: `custom-${product.id}`,
+            name: product.name,
+            description: product.description,
+            price: Number(product.price),
+            type: product.type,
+            imageUrl: product.imageUrl,
+            category: product.category,
+            barber: product.sellerName || "Din lokale barber",
+            barberId: product.sellerId,
+            homepageSlider: product.homepageSlider
+        }));
+        const hasHomepageSelection = products.some(product => product.homepageSlider === 1 || product.homepageSlider === 2);
+        const firstSlider = hasHomepageSelection ? products.filter(product => product.homepageSlider === 1) : products.slice(0, 10);
+        const secondSlider = hasHomepageSelection ? products.filter(product => product.homepageSlider === 2) : products.slice(10);
+        createSlider(firstSlider, "#productGrid", "#productPage", "#productsPrevious", "#productsNext");
+        createSlider(secondSlider, "#secondaryProductGrid", "#secondaryProductPage", "#secondaryProductsPrevious", "#secondaryProductsNext");
     } catch {
-        // The product sliders still work with the neutral fallback label.
+        ["#productGrid", "#secondaryProductGrid"].forEach(id => {
+            document.querySelector(id).innerHTML = '<p class="empty-state">Produkterne kunne ikke indlæses.</p>';
+        });
     }
 }
 
-loadHomeBarbers();
+loadHomeProducts();

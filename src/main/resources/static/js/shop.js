@@ -5,12 +5,7 @@ const shopCategory = document.querySelector("#shopCategory");
 const shopBarber = document.querySelector("#shopBarber");
 const shopSort = document.querySelector("#shopSort");
 const clearShopFilters = document.querySelector("#clearShopFilters");
-const shopProducts = Object.values(window.barberProducts).flat().map(([id, name, description, price, type]) => ({
-    id, name, description, price, type,
-    category: window.barberProductMeta[id][0],
-    barber: "",
-    barberId: null
-}));
+const shopProducts = [];
 
 shopSearch.value = new URLSearchParams(window.location.search).get("search") || "";
 
@@ -18,19 +13,11 @@ function populateSelect(select, values) {
     values.forEach(value => select.insertAdjacentHTML("beforeend", `<option value="${value}">${value}</option>`));
 }
 
-populateSelect(shopCategory, [...new Set(shopProducts.map(product => product.category))]);
-
 async function loadShopBarbers() {
     const response = await fetch("/api/barbers");
     if (!response.ok) return;
     const barbers = await response.json();
-    barbers.forEach((barber, index) => {
-        shopProducts.forEach((product, productIndex) => {
-            if (!product.barberId && productIndex % barbers.length === index) {
-                product.barber = barber.displayName;
-                product.barberId = barber.id;
-            }
-        });
+    barbers.forEach(barber => {
         shopBarber.insertAdjacentHTML("beforeend", `<option value="${barber.id}">${barber.displayName}</option>`);
     });
     renderShop();
@@ -41,19 +28,33 @@ async function loadAdminProducts() {
         const response = await fetch("/api/catalog/products");
         if (!response.ok) return;
         const products = await response.json();
-        products.forEach(product => shopProducts.push({
+        shopProducts.splice(0, shopProducts.length, ...products.map(product => ({
             id: `custom-${product.id}`, name: product.name, description: product.description,
             price: Number(product.price), type: product.type, imageUrl: product.imageUrl, category: product.category,
             barber: product.sellerName, barberId: product.sellerId
-        }));
+        })));
+        shopCategory.innerHTML = '<option value="">Alle kategorier</option>';
+        populateSelect(shopCategory, [...new Set(shopProducts.map(product => product.category))].sort((a, b) => a.localeCompare(b, "da")));
         renderShop();
-    } catch { /* Static catalogue remains available. */ }
+    } catch {
+        shopGrid.innerHTML = '<p class="shop-empty">Produkterne kunne ikke indlæses. Prøv igen om lidt.</p>';
+    }
+}
+
+function normalized(value) {
+    return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+function matchesSearch(product, searchTerm) {
+    if (!searchTerm) return true;
+    const searchable = normalized(`${product.name} ${product.description} ${product.barber} ${product.category}`);
+    return searchable.includes(searchTerm);
 }
 
 function renderShop() {
-    const term = shopSearch.value.trim().toLowerCase();
+    const term = normalized(shopSearch.value.trim());
     const filtered = shopProducts.filter(product =>
-        (!term || `${product.name} ${product.description}`.toLowerCase().includes(term)) &&
+        matchesSearch(product, term) &&
         (!shopCategory.value || product.category === shopCategory.value) &&
         (!shopBarber.value || product.barberId === Number(shopBarber.value))
     );
@@ -85,6 +86,5 @@ shopGrid.addEventListener("click", event => {
 shopGrid.addEventListener("keydown", event => {
     if (event.key === "Enter" && event.target.matches("[data-product-link]")) window.location.href = event.target.dataset.productLink;
 });
-renderShop();
 loadShopBarbers();
 loadAdminProducts();

@@ -22,6 +22,9 @@ public class CustomerOrder {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
+    private String paymentStatus = "PAID";
+    private String stripeCheckoutSessionId;
+    private boolean orderConfirmationEmailSent;
 
     @ElementCollection
     @CollectionTable(name = "customer_order_items", joinColumns = @JoinColumn(name = "order_id"))
@@ -34,6 +37,13 @@ public class CustomerOrder {
     public void setPurchasedAt(LocalDateTime purchasedAt) { this.purchasedAt = purchasedAt; }
     public BigDecimal getTotalAmount() { return totalAmount; }
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+    public boolean isPaid() { return paymentStatus == null || "PAID".equals(paymentStatus); }
+    public String getStripeCheckoutSessionId() { return stripeCheckoutSessionId; }
+    public void setStripeCheckoutSessionId(String stripeCheckoutSessionId) { this.stripeCheckoutSessionId = stripeCheckoutSessionId; }
+    public boolean isOrderConfirmationEmailSent() { return orderConfirmationEmailSent; }
+    public void setOrderConfirmationEmailSent(boolean orderConfirmationEmailSent) { this.orderConfirmationEmailSent = orderConfirmationEmailSent; }
     public List<OrderItem> getItems() { return items; }
     public void setItems(List<OrderItem> items) { this.items = items; }
 }

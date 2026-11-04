@@ -1,11 +1,11 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
-    <title>Sign in | Barber.com</title>
+    <title>Log ind | Barber.com</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
@@ -15,71 +15,71 @@
     <script src="/js/login.js" defer></script>
 </head>
 <body>
-<nav class="site-nav" aria-label="Main navigation">
+<nav class="site-nav" aria-label="Hovedmenu">
     <div class="nav-side">
         <button class="nav-control" type="button" data-menu-toggle aria-expanded="false" aria-controls="sideMenu"><span class="menu-icon" aria-hidden="true"></span><span class="menu-label">Menu</span></button>
-        <button class="nav-control" type="button" data-search-toggle><svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true" fill="none"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg><span class="search-label">Search</span></button>
+        <button class="nav-control" type="button" data-search-toggle><svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true" fill="none"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg><span class="search-label">Søg</span></button>
     </div>
-    <a class="brand" href="/" aria-label="Barber.com home">
+    <a class="brand" href="/" aria-label="Barber.com forside">
         <img class="logo-image" src="/images/barbercom-logo.png" alt="Barber.com">
     </a>
     <div class="nav-side nav-side--right">
-        <button class="nav-control contact-control" type="button" data-contact-toggle aria-label="Contact us"><span class="contact-label">Contact us</span><svg class="nav-glyph contact-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 3h12v10H9l-4 4v-4H4z"/><path d="M7 7h6M7 10h4"/></svg></button>
-        <a class="nav-control icon-control" href="/account.html" aria-label="My account"><svg class="nav-glyph" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="6" r="3"/><path d="M4 18c.7-3.2 2.7-5 6-5s5.3 1.8 6 5"/></svg></a>
-        <button class="nav-control icon-control" type="button" data-cart-toggle aria-label="Shopping cart"><svg class="nav-glyph" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 3h2l2 10h9l2-7H5"/><circle cx="8" cy="17" r="1"/><circle cx="15" cy="17" r="1"/></svg><span class="cart-count" id="cartCount">0</span></button>
+        <button class="nav-control contact-control" type="button" data-contact-toggle aria-label="Kontakt os"><span class="contact-label">Kontakt os</span><svg class="nav-glyph contact-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 3h12v10H9l-4 4v-4H4z"/><path d="M7 7h6M7 10h4"/></svg></button>
+        <a class="nav-control icon-control" href="/account.html" aria-label="Min konto"><svg class="nav-glyph" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="6" r="3"/><path d="M4 18c.7-3.2 2.7-5 6-5s5.3 1.8 6 5"/></svg></a>
+        <button class="nav-control icon-control" type="button" data-cart-toggle aria-label="Indkøbskurv"><svg class="nav-glyph" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 3h2l2 10h9l2-7H5"/><circle cx="8" cy="17" r="1"/><circle cx="15" cy="17" r="1"/></svg><span class="cart-count" id="cartCount">0</span></button>
     </div>
 </nav>
 <div class="menu-backdrop" id="menuBackdrop"></div>
 <div class="menu-backdrop" id="rightBackdrop"></div>
-<aside class="right-panel" id="contactPanel"><div class="panel-top"><h2>Contact us</h2><button class="close-menu" type="button" data-right-close>×</button></div><dl class="contact-details"><div><dt>Email</dt><dd>hello@barber.com</dd></div><div><dt>Phone</dt><dd>+45 12 34 56 78</dd></div><div><dt>Visit us</dt><dd>Vesterbrogade 181<br>1800 Frederiksberg</dd></div><div><dt>Hours</dt><dd>Mon–Sat · 09:00–18:00</dd></div></dl></aside>
-<aside class="right-panel" id="cartPanel"><div class="panel-top"><h2>Your cart</h2><button class="close-menu" type="button" data-right-close>×</button></div><ul class="cart-items" id="cartItems"></ul><div class="cart-total"><span>Total</span><span id="cartTotal">0.00 DKK</span></div></aside>
+<aside class="right-panel" id="contactPanel"><div class="panel-top"><h2>Kontakt os</h2><button class="close-menu" type="button" data-right-close>×</button></div><dl class="contact-details"><div><dt>E-mail</dt><dd>loegcas@gmail.com</dd></div><div><dt>Telefon</dt><dd>+45 61128112</dd></div><div><dt>Besøg os</dt><dd>Vesterbrogade 181<br>1800 Frederiksberg</dd></div><div><dt>Åbningstider</dt><dd>Man–lør · 09:00–18:00</dd></div></dl></aside>
+<aside class="right-panel" id="cartPanel"><div class="panel-top"><h2>Din kurv</h2><button class="close-menu" type="button" data-right-close>×</button></div><ul class="cart-items" id="cartItems"></ul><div class="cart-total"><span>I alt</span><span id="cartTotal">0.00 DKK</span></div></aside>
 <aside class="side-menu" id="sideMenu" aria-hidden="true" aria-label="Site menu">
     <div class="side-menu__top">
         <span class="side-menu__title">Barber.com</span>
-        <button class="close-menu" type="button" data-menu-close aria-label="Close menu">×</button>
+        <button class="close-menu" type="button" data-menu-close aria-label="Luk menu">×</button>
     </div>
     <label class="menu-search" for="menuSearch">
         <svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true" fill="none"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg>
-        <input id="menuSearch" type="search" placeholder="Search Barber.com">
+        <input id="menuSearch" type="search" placeholder="Søg på Barber.com">
     </label>
-    <nav class="menu-links" aria-label="Menu links">
-        <a href="/">Home</a>
-        <a href="/login.html">Book an appointment</a>
-        <a href="/">Shop products</a>
-        <a href="/login.html">Sign in</a>
-        <a href="/register.html">Create account</a>
+    <nav class="menu-links" aria-label="Menupunkter">
+        <a href="/">Forside</a>
+        <a href="/login.html">Book tid</a>
+        <a href="/shop.html">Shop produkter</a>
+        <a href="/login.html">Log ind</a>
+        <a href="/register.html">Opret konto</a>
     </nav>
-    <p class="side-menu__footer">Browse freely. Sign in when you are ready to book or buy.</p>
+    <p class="side-menu__footer">Gå på opdagelse frit. Log ind, når du vil booke eller købe.</p>
 </aside>
 <main class="auth-page">
-    <section class="auth-shell" aria-label="Sign in">
+    <section class="auth-shell" aria-label="Log ind">
         <aside class="brand-panel">
             <div class="brand-copy">
-                <p class="eyebrow">Fresh cuts, on your time</p>
-                <h2>Good style starts with a good booking.</h2>
-                <p>Find your barber, book your chair, and keep your look sharp.</p>
+                <p class="eyebrow">Friske klip, når det passer dig</p>
+                <h2>God stil starter med en god booking.</h2>
+                <p>Find din barber, book din stol og hold dit look skarpt.</p>
             </div>
         </aside>
 
         <section class="form-panel">
-            <h1>Welcome back</h1>
-            <p class="form-intro">Sign in to manage your bookings and appointments.</p>
+            <h1>Velkommen tilbage</h1>
+            <p class="form-intro">Log ind for at administrere dine bookinger og aftaler.</p>
             <p id="message" class="message" role="status"></p>
 
             <form id="loginForm" class="auth-form">
                 <div class="field">
-                    <label for="email">Email address</label>
+                    <label for="email">E-mailadresse</label>
                     <input id="email" name="email" type="email" autocomplete="username" placeholder="you@example.com" required>
                 </div>
                 <div class="field">
-                    <label for="password">Password</label>
-                    <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Your password" required>
+                    <label for="password">Adgangskode</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Din adgangskode" required>
                 </div>
-                <button class="primary-button" type="submit">Sign in</button>
+                <button class="primary-button" type="submit">Log ind</button>
             </form>
 
-            <p class="switch-link">New to Barber.com? <a href="/register.html">Create an account</a></p>
-            <p class="form-footer">Your details stay private and secure.</p>
+            <p class="switch-link">Ny hos Barber.com? <a href="/register.html">Opret en konto</a></p>
+            <p class="form-footer">Dine oplysninger forbliver private og sikre.</p>
         </section>
     </section>
 </main>

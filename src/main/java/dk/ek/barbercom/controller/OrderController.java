@@ -1,5 +1,7 @@
 package dk.ek.barbercom.controller;
 
+import com.stripe.StripeClient;
+import com.stripe.model.checkout.Session;
 import dk.ek.barbercom.dto.*;
 import dk.ek.barbercom.model.CustomerOrder;
 import dk.ek.barbercom.model.OrderItem;
@@ -7,10 +9,12 @@ import dk.ek.barbercom.model.Role;
 import dk.ek.barbercom.model.User;
 import dk.ek.barbercom.repository.CustomerOrderRepository;
 import dk.ek.barbercom.repository.UserRepository;
+import dk.ek.barbercom.service.OrderNotificationService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,17 +32,53 @@ public class OrderController {
             "Conditioner", "Barber brush", "Aftershave mist", "Texture dust", "Grooming kit");
     private final CustomerOrderRepository orders;
     private final UserRepository users;
+    private final OrderNotificationService notifications;
+    private final String stripeSecretKey;
 
-    public OrderController(CustomerOrderRepository orders, UserRepository users) {
+    public OrderController(CustomerOrderRepository orders, UserRepository users, OrderNotificationService notifications,
+            @Value("${barbercom.stripe.secret-key:}") String stripeSecretKey) {
         this.orders = orders;
         this.users = users;
+        this.notifications = notifications;
+        this.stripeSecretKey = stripeSecretKey;
     }
 
     @GetMapping("/mine")
-    @Transactional(readOnly = true)
+    @Transactional
     public List<OrderDTO> mine(@AuthenticationPrincipal UserDetails principal) {
         User customer = currentUser(principal);
-        return orders.findByCustomerIdOrderByPurchasedAtDesc(customer.getId()).stream().map(this::toDto).toList();
+        List<CustomerOrder> customerOrders = orders.findByCustomerIdOrderByPurchasedAtDesc(customer.getId());
+        reconcilePendingStripeOrders(customerOrders);
+        return customerOrders.stream()
+                .filter(CustomerOrder::isPaid).map(this::toDto).toList();
+    }
+
+    /**
+     * Webhooks are the primary confirmation mechanism. This fallback lets the
+     * account page recover safely if a local Stripe CLI listener is stopped or
+     * delivery is delayed: Stripe must report this exact session as paid.
+     */
+    private void reconcilePendingStripeOrders(List<CustomerOrder> customerOrders) {
+        if (stripeSecretKey.isBlank()) return;
+        StripeClient stripe = new StripeClient(stripeSecretKey);
+        customerOrders.stream()
+                .filter(order -> "PENDING".equals(order.getPaymentStatus()))
+                .filter(order -> order.getStripeCheckoutSessionId() != null && !order.getStripeCheckoutSessionId().isBlank())
+                .forEach(order -> {
+                    try {
+                        Session session = stripe.v1().checkout().sessions()
+                                .retrieve(order.getStripeCheckoutSessionId());
+                        if ("paid".equals(session.getPaymentStatus())) {
+                            order.setPaymentStatus("PAID");
+                            if (!order.isOrderConfirmationEmailSent() && notifications.sendOrderConfirmation(order)) {
+                                order.setOrderConfirmationEmailSent(true);
+                            }
+                            orders.save(order);
+                        }
+                    } catch (Exception ignored) {
+                        // The account page remains available if Stripe is unreachable.
+                    }
+                });
     }
 
     @GetMapping("/sales")
@@ -49,6 +89,7 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Kun business-brugere kan se salg.");
         }
         List<BusinessSaleDTO> sales = orders.findAllWithItems().stream()
+                .filter(CustomerOrder::isPaid)
                 .flatMap(order -> order.getItems().stream()
                         .filter(item -> belongsToBusiness(item, business))
                         .map(item -> new BusinessSaleDTO(
@@ -65,7 +106,9 @@ public class OrderController {
     public ResponseEntity<?> purchase(
             @AuthenticationPrincipal UserDetails principal,
             @RequestBody OrderRequest request) {
-        User customer = currentUser(principal);
+        return ResponseEntity.status(HttpStatus.GONE)
+                .body("Betaling foregår nu sikkert gennem Stripe Checkout.");
+        /*User customer = currentUser(principal);
         if (customer.getRole() == Role.BUSINESS) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Virksomhedsprofiler kan ikke købe produkter. Log ind med en privat- eller administratorprofil.");
@@ -97,7 +140,7 @@ public class OrderController {
         order.setPurchasedAt(LocalDateTime.now());
         order.setItems(items);
         order.setTotalAmount(total);
-        return ResponseEntity.status(HttpStatus.CREATED).body(toDto(orders.save(order)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(toDto(orders.save(order)));*/
     }
 
     private User currentUser(UserDetails principal) {
