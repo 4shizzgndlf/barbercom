@@ -176,6 +176,14 @@ body.menu-open { overflow: hidden; }
 .admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-card,.admin-list-card{min-width:0}.admin-card input,.admin-card select{width:100%;max-width:100%}.product-admin-row{display:grid;grid-template-columns:minmax(0,1fr);justify-content:initial;align-items:start;gap:10px}.product-admin-row__details b,.product-admin-row__details small{display:block}.product-admin-row .homepage-placement{justify-content:space-between;width:100%;margin:0}.product-admin-row button{justify-self:start}@media(max-width:860px){.admin-grid{grid-template-columns:1fr}}
 .product-image-upload{display:grid;gap:6px;color:var(--muted);font-size:.78rem}.product-image-upload input{width:100%;max-width:100%;font:inherit;font-size:.78rem}
 
+/* Equal card rhythm on the homepage, even when product descriptions have different lengths. */
+.product-card{display:flex;min-width:0;height:100%;flex-direction:column}.product-card b{display:block}.product-card p{min-height:3.6em}.product-card button{float:none;align-self:flex-end;margin-top:auto}.article-card{height:100%}.article-card a{display:flex;min-height:36px;align-items:flex-end}
+
+/* Phone landscape does not leave enough width for the product-detail columns. */
+@media (max-width:720px), (orientation:landscape) and (max-height:520px){.product-detail-page{padding:82px 18px 48px}.product-detail{grid-template-columns:1fr;gap:28px}.product-detail__art{min-height:min(48vw,360px)}.product-detail__content{max-width:none}}
+
+@media (orientation:landscape) and (max-height:520px){.article-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.article-card{min-height:0;padding:16px}.article-card .eyebrow{margin-bottom:12px;font-size:.6rem}.article-card h3{margin-bottom:9px;font-size:1.1rem}.article-card p{font-size:.72rem;line-height:1.45}.article-card__image{height:92px;margin-top:14px}.article-card a{min-height:28px;padding-top:12px;font-size:.61rem}}
+
 .auth-page::before,
 .auth-page::after {
     position: absolute;
