@@ -302,6 +302,8 @@ body.menu-open { overflow: hidden; }
 .nav-link:hover { color: var(--red); }
 .icon-control { position: relative; width: 28px; height: 28px; justify-content: center; }
 .cart-count { position: absolute; top: -5px; right: -7px; display: grid; min-width: 15px; height: 15px; place-items: center; border-radius: 50%; color: white; font-size: .55rem; background: var(--red); }
+.account-notification { position:absolute;top:-5px;right:-7px;display:grid;min-width:15px;height:15px;place-items:center;border-radius:50%;color:white;font-size:.55rem;background:var(--red); }
+.account-notification[hidden] { display: none !important; }
 
 .nav-control {
     display: inline-flex;

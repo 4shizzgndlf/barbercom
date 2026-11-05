@@ -1,6 +1,7 @@
 package dk.ek.barbercom.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 public class User {
@@ -21,6 +22,7 @@ public class User {
     private String businessSubscriptionCheckoutSessionId;
     private String stripeSubscriptionId;
     private boolean businessSubscriptionConfirmationEmailSent;
+    private LocalDateTime businessNotificationsReadAt;
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -119,6 +121,9 @@ public class User {
     public boolean hasActiveBusinessSubscription() {
         return role != Role.BUSINESS || businessSubscriptionStatus == null || "ACTIVE".equals(businessSubscriptionStatus);
     }
+
+    public LocalDateTime getBusinessNotificationsReadAt() { return businessNotificationsReadAt; }
+    public void setBusinessNotificationsReadAt(LocalDateTime value) { this.businessNotificationsReadAt = value; }
 
     public void setZipCode(Integer zipCode) {
         this.zipCode = zipCode;

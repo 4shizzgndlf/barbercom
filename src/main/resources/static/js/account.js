@@ -146,6 +146,20 @@ async function loadBusinessSales() {
     }
 }
 
+async function markBusinessNotificationsRead() {
+    const token = csrfToken();
+    if (!token) return;
+    const response = await fetch("/api/account/notifications/read", {
+        method: "POST",
+        headers: { "X-XSRF-TOKEN": decodeURIComponent(token) },
+        credentials: "same-origin"
+    });
+    if (response.ok) document.querySelectorAll("[data-account-notification]").forEach(badge => {
+        badge.hidden = true;
+        badge.textContent = "0";
+    });
+}
+
 appointmentsList?.addEventListener("click", async event => {
     const button = event.target.closest("[data-cancel-booking]");
     if (!button || !confirm("Vil du annullere denne booking?")) return;
@@ -214,6 +228,7 @@ async function initializeAccount() {
         await loadBusinessAppointments();
         await loadChairs();
         await loadBusinessSales();
+        await markBusinessNotificationsRead();
     } else {
         await loadCustomerAppointments();
     }

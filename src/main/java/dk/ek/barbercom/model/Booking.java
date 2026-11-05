@@ -31,4 +31,5 @@ public class Booking {
     public void setBookingDate(LocalDate bookingDate) { this.bookingDate = bookingDate; }
     public LocalTime getStartTime() { return startTime; }
     public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 }

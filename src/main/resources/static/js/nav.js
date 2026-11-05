@@ -52,6 +52,29 @@ function activateCart(user) {
     renderCart();
 }
 
+function renderAccountNotifications(count) {
+    document.querySelectorAll("[data-account-notification]").forEach(badge => {
+        badge.hidden = !count;
+        badge.textContent = count > 99 ? "99+" : String(count);
+    });
+}
+
+function loadAccountNotifications(user) {
+    if (user?.role !== "BUSINESS") {
+        document.querySelectorAll("[data-account-notification]").forEach(badge => badge.remove());
+        return;
+    }
+    document.querySelectorAll('a[href="/account.html"]').forEach(link => {
+        if (!link.querySelector("[data-account-notification]")) {
+            link.insertAdjacentHTML("beforeend", '<span class="account-notification" data-account-notification hidden aria-live="polite"></span>');
+        }
+    });
+    fetch("/api/account/notifications", { credentials: "same-origin" })
+        .then(response => response.ok ? response.json() : { count: 0 })
+        .then(data => renderAccountNotifications(Number(data.count) || 0))
+        .catch(() => renderAccountNotifications(0));
+}
+
 // Remove the previous shared cart once. It could expose one account's items
 // to the next account using this browser.
 localStorage.removeItem("barbercom-cart");
@@ -72,6 +95,7 @@ if (menuLinks) {
         })
         .then(user => {
             activateCart(user);
+            loadAccountNotifications(user);
             if (user?.role === "ADMIN") {
                 menuLinks.querySelector('a[href="/shop.html"]')?.insertAdjacentHTML("afterend", '<a href="/admin.html">Dashboard</a>');
             }
