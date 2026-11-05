@@ -30,7 +30,7 @@ function render() {
         return `<div class="admin-row"><span><b>${business.businessName}</b><small>${business.firstName} ${business.lastName}</small><small>${contact}</small></span><button data-delete-barber="${business.id}">Fjern</button></div>`;
     }).join("");
     document.querySelector("#productList").innerHTML = dashboard.products.length
-        ? dashboard.products.map(product => `<div class="admin-row product-admin-row"><div class="product-admin-row__details"><b>${product.name}</b><small>${product.sellerName} · ${money(product.price)}</small></div><label class="homepage-placement"><span>Vis på forsiden</span><select data-homepage-product="${product.id}"><option value="0" ${product.homepageSlider === 0 ? "selected" : ""}>Vis ikke</option><option value="1" ${product.homepageSlider === 1 ? "selected" : ""}>Slider 1</option><option value="2" ${product.homepageSlider === 2 ? "selected" : ""}>Slider 2</option></select></label><button data-delete-product="${product.id}">Fjern produkt</button></div>`).join("")
+        ? dashboard.products.map(product => `<div class="admin-row product-admin-row"><div class="product-admin-row__details"><b>${product.name}</b><small>${product.sellerName} · ${money(product.price)}</small></div><label class="homepage-placement"><span>Vis på forsiden</span><select data-homepage-product="${product.id}"><option value="0" ${product.homepageSlider === 0 ? "selected" : ""}>Vis ikke</option><option value="1" ${product.homepageSlider === 1 ? "selected" : ""}>Slider 1</option><option value="2" ${product.homepageSlider === 2 ? "selected" : ""}>Slider 2</option></select></label><label class="product-image-upload"><span>Skift produktbillede</span><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-product-image="${product.id}"></label><button data-delete-product="${product.id}">Fjern produkt</button></div>`).join("")
         : '<p class="empty-state">Ingen produkter er tilføjet fra dashboardet endnu.</p>';
 }
 
@@ -84,6 +84,20 @@ document.addEventListener("click", async event => {
 
 document.addEventListener("change", async event => {
     const productId = event.target.dataset.homepageProduct;
+    const imageProductId = event.target.dataset.productImage;
+    if (imageProductId) {
+        const image = event.target.files?.[0];
+        if (!image) return;
+        const data = new FormData();
+        data.append("image", image);
+        try {
+            await request(`/api/admin/products/${imageProductId}/image`, { method: "POST", body: data });
+            await load();
+        } catch (error) {
+            alert(error.message);
+        }
+        return;
+    }
     if (!productId) return;
     try {
         await request(`/api/admin/products/${productId}/homepage?slider=${event.target.value}`, { method: "PUT" });

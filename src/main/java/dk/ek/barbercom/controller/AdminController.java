@@ -99,6 +99,16 @@ public class AdminController {
         return ResponseEntity.ok(toDto(products.save(product)));
     }
 
+    @PostMapping(value = "/api/admin/products/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> replaceProductImage(@AuthenticationPrincipal UserDetails principal, @PathVariable Long id, @RequestParam MultipartFile image) {
+        requireAdmin(principal);
+        if (image.isEmpty()) return ResponseEntity.badRequest().body("Vælg et billede først.");
+        ShopProduct product = products.findById(id).orElse(null);
+        if (product == null) return ResponseEntity.notFound().build();
+        product.setImageUrl(storeImage(image));
+        return ResponseEntity.ok(toDto(products.save(product)));
+    }
+
     @PostMapping("/api/admin/barbers")
     public ResponseEntity<?> addBusiness(@AuthenticationPrincipal UserDetails principal, @RequestBody BusinessRequest request) {
         requireAdmin(principal);
