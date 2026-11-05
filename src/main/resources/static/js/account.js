@@ -3,9 +3,40 @@ const profileMessage = document.querySelector("#profileMessage");
 const appointmentsList = document.querySelector("#appointmentsList");
 const businessDayNav = document.querySelector("#businessDayNav");
 const businessDayLabel = document.querySelector("#businessDayLabel");
+const chairForm = document.querySelector("#chairForm");
+const chairsList = document.querySelector("#chairsList");
 let currentUser;
 let selectedBusinessDate = new Date();
 const paymentSuccess = new URLSearchParams(window.location.search).get("payment") === "success";
+const pageSize = 5;
+const pagination = {};
+
+function renderPaginated(list, key, items, renderItem, emptyMessage) {
+    const previousPage = pagination[key]?.page || 1;
+    if (!items.length) {
+        list.innerHTML = `<p class="empty-state">${emptyMessage}</p>`;
+        return;
+    }
+    const pages = Math.ceil(items.length / pageSize);
+    const page = Math.min(previousPage, pages);
+    pagination[key] = { list, items, renderItem, emptyMessage, page };
+    const first = (page - 1) * pageSize;
+    const controls = pages > 1 ? `<nav class="list-pagination" aria-label="Sider">
+        <button type="button" data-page-list="${key}" data-page-change="-1" ${page === 1 ? "disabled" : ""}>← Forrige</button>
+        <span>Side ${page} af ${pages}</span>
+        <button type="button" data-page-list="${key}" data-page-change="1" ${page === pages ? "disabled" : ""}>Næste →</button>
+    </nav>` : "";
+    list.innerHTML = items.slice(first, first + pageSize).map(renderItem).join("") + controls;
+}
+
+document.addEventListener("click", event => {
+    const button = event.target.closest("[data-page-list]");
+    if (!button || button.disabled) return;
+    const config = pagination[button.dataset.pageList];
+    if (!config) return;
+    config.page += Number(button.dataset.pageChange);
+    renderPaginated(config.list, button.dataset.pageList, config.items, config.renderItem, config.emptyMessage);
+});
 
 function csrfToken() {
     return document.cookie.split("; ").find(value => value.startsWith("XSRF-TOKEN="))?.split("=").slice(1).join("=");
@@ -43,14 +74,10 @@ async function loadCustomerAppointments() {
         const response = await fetch("/api/bookings/mine", { credentials: "same-origin" });
         if (!response.ok) throw new Error();
         const bookings = await response.json();
-        if (!bookings.length) {
-            appointmentsList.innerHTML = '<p class="empty-state">Du har ingen bookinger endnu.</p>';
-            return;
-        }
-        appointmentsList.innerHTML = bookings.map(booking => {
+        renderPaginated(appointmentsList, "customerBookings", bookings, booking => {
             const date = formatDate(new Date(`${booking.date}T12:00:00`));
             return `<article class="appointment-item"><div><p class="eyebrow">${date}</p><h4>${escapeHtml(booking.barberName)}</h4></div><div class="appointment-item__actions"><time>${booking.startTime.slice(0, 5)}</time><button type="button" data-cancel-booking="${booking.id}">Annullér</button></div></article>`;
-        }).join("");
+        }, "Du har ingen bookinger endnu.");
     } catch {
         appointmentsList.innerHTML = '<p class="empty-state">Kunne ikke hente dine bookinger.</p>';
     }
@@ -62,18 +89,21 @@ async function loadBusinessAppointments() {
         const response = await fetch(`/api/bookings/business?date=${isoDate(selectedBusinessDate)}`, { credentials: "same-origin" });
         if (!response.ok) throw new Error();
         const bookings = await response.json();
-        if (!bookings.length) {
-            appointmentsList.innerHTML = '<p class="empty-state">Der er ingen bookinger denne dag.</p>';
-            return;
-        }
-        appointmentsList.innerHTML = bookings.map(booking => `
+        renderPaginated(appointmentsList, "businessBookings", bookings, booking => `
             <article class="appointment-item appointment-item--business">
                 <time>${booking.startTime.slice(0, 5)}</time>
-                <div><h4>${escapeHtml(booking.customerName)}</h4><p>${escapeHtml(booking.customerEmail)}</p></div>
-            </article>`).join("");
+                <div><h4>${escapeHtml(booking.customerName)}</h4><p>${escapeHtml(booking.customerEmail)} · ${escapeHtml(booking.chairName)}</p></div>
+            </article>`, "Der er ingen bookinger denne dag.");
     } catch {
         appointmentsList.innerHTML = '<p class="empty-state">Kunne ikke hente dagens bookinger.</p>';
     }
+}
+
+async function loadChairs() {
+    const response = await fetch("/api/account/chairs", { credentials: "same-origin" });
+    if (!response.ok) return;
+    const chairs = await response.json();
+    chairsList.innerHTML = chairs.map(chair => `<div class="chair-row"><span>${escapeHtml(chair.name)}</span><button type="button" data-delete-chair="${chair.id}">Fjern</button></div>`).join("");
 }
 
 async function loadOrders() {
@@ -83,15 +113,11 @@ async function loadOrders() {
         const response = await fetch("/api/orders/mine", { credentials: "same-origin" });
         if (!response.ok) throw new Error();
         const orders = await response.json();
-        if (!orders.length) {
-            list.innerHTML = '<p class="empty-state">Du har ikke gennemført et køb endnu.</p>';
-            return;
-        }
-        list.innerHTML = orders.map(order => {
+        renderPaginated(list, "orders", orders, order => {
             const date = new Date(order.purchasedAt).toLocaleDateString("da-DK", { day: "numeric", month: "long", year: "numeric" });
             const products = order.items.map(item => `${item.quantity} × ${escapeHtml(item.name)}<span class="order-seller">Købt hos ${escapeHtml(item.sellerName || "Barber.com")}</span>`).join("");
             return `<article class="order-item"><div><h4>Ordre #${order.id}</h4><p>${date}</p><p>${products}</p></div><strong>${Number(order.totalAmount).toFixed(2).replace(".", ",")} DKK</strong></article>`;
-        }).join("");
+        }, "Du har ikke gennemført et køb endnu.");
     } catch {
         list.innerHTML = '<p class="empty-state">Kunne ikke hente dine ordrer.</p>';
     }
@@ -106,11 +132,7 @@ async function loadBusinessSales() {
         const response = await fetch("/api/orders/sales", { credentials: "same-origin" });
         if (!response.ok) throw new Error();
         const sales = await response.json();
-        if (!sales.length) {
-            list.innerHTML = '<p class="empty-state">Du har ikke solgt produkter endnu.</p>';
-            return;
-        }
-        list.innerHTML = sales.map(sale => {
+        renderPaginated(list, "sales", sales, sale => {
             const date = new Date(sale.purchasedAt).toLocaleDateString("da-DK", { day: "numeric", month: "long", year: "numeric" });
             const address = sale.customerAddress ? escapeHtml(sale.customerAddress) : "Adresse ikke angivet";
             const zipCode = sale.customerZipCode ? `, ${escapeHtml(String(sale.customerZipCode))}` : "";
@@ -118,7 +140,7 @@ async function loadBusinessSales() {
             const phone = sale.customerPhoneNumber ? `+45 ${escapeHtml(String(sale.customerPhoneNumber))}` : "Telefon ikke angivet";
             const total = Number(sale.unitPrice) * Number(sale.quantity);
             return `<article class="sale-item"><div><h4>${escapeHtml(sale.productName)} · ${sale.quantity} stk.</h4><p>${date}</p><p><strong>Køber:</strong> ${escapeHtml(sale.customerName)}</p><p><strong>E-mail:</strong> ${email}</p><p><strong>Telefon:</strong> ${phone}</p><p><strong>Adresse:</strong> ${address}${zipCode}</p></div><strong>${total.toFixed(2).replace(".", ",")} DKK</strong></article>`;
-        }).join("");
+        }, "Du har ikke solgt produkter endnu.");
     } catch {
         list.innerHTML = '<p class="empty-state">Kunne ikke hente dit salg.</p>';
     }
@@ -138,10 +160,24 @@ appointmentsList?.addEventListener("click", async event => {
     else alert("Kunne ikke annullere bookingen. Prøv igen.");
 });
 
+chairForm?.addEventListener("submit", async event => {
+    event.preventDefault(); const token = csrfToken(); if (!token) return;
+    const name = new FormData(chairForm).get("name");
+    const response = await fetch("/api/account/chairs", { method: "POST", headers: { "Content-Type": "application/json", "X-XSRF-TOKEN": decodeURIComponent(token) }, credentials: "same-origin", body: JSON.stringify({ name }) });
+    if (response.ok) { chairForm.reset(); loadChairs(); } else alert(await response.text());
+});
+
+chairsList?.addEventListener("click", async event => {
+    const button = event.target.closest("[data-delete-chair]"); if (!button || !confirm("Fjern denne stol?")) return;
+    const response = await fetch(`/api/account/chairs/${button.dataset.deleteChair}`, { method: "DELETE", headers: { "X-XSRF-TOKEN": decodeURIComponent(csrfToken() || "") }, credentials: "same-origin" });
+    if (response.ok) loadChairs(); else alert(await response.text());
+});
+
 businessDayNav?.addEventListener("click", event => {
     const button = event.target.closest("[data-day-change]");
     if (!button) return;
     selectedBusinessDate.setDate(selectedBusinessDate.getDate() + Number(button.dataset.dayChange));
+    pagination.businessBookings = { page: 1 };
     loadBusinessAppointments();
 });
 
@@ -174,7 +210,9 @@ async function initializeAccount() {
         document.querySelector("#bookAppointmentLink").hidden = true;
         document.querySelector("#orders").hidden = true;
         businessDayNav.hidden = false;
+        document.querySelector("#chairsCard").hidden = false;
         await loadBusinessAppointments();
+        await loadChairs();
         await loadBusinessSales();
     } else {
         await loadCustomerAppointments();

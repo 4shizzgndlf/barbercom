@@ -31,13 +31,15 @@ public class BookingNotificationService {
     }
 
     public void sendBookingConfirmation(Booking booking) {
+        String shopName = businessName(booking);
+        String chairName = booking.getChair() == null ? "Stol 1" : booking.getChair().getName();
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(from);
             message.setTo(booking.getCustomer().getEmail());
             message.setSubject("Din booking hos Barber.com er bekræftet");
             message.setText("Hej " + booking.getCustomer().getFirstName() + ",\n\n"
-                    + "Din tid hos " + booking.getBarber().getFirstName() + " " + booking.getBarber().getLastName()
+                    + "Din tid hos " + shopName + " ved " + chairName
                     + " er bekræftet den " + booking.getBookingDate() + " kl. " + booking.getStartTime() + ".\n\n"
                     + "Vi glæder os til at se dig.\nBarber.com");
             mailSender.send(message);
@@ -56,8 +58,8 @@ public class BookingNotificationService {
             return;
         }
 
-        String content = "Barber.com: Din tid hos " + booking.getBarber().getFirstName() + " "
-                + booking.getBarber().getLastName() + " er bekræftet den "
+        String content = "Barber.com: Din tid hos " + businessName(booking) + " ved "
+                + (booking.getChair() == null ? "Stol 1" : booking.getChair().getName()) + " er bekræftet den "
                 + booking.getBookingDate() + " kl. " + booking.getStartTime() + ".";
         String body = "{\"type\":\"transactional\",\"unicodeEnabled\":true,\"sender\":\""
                 + json(smsSender) + "\",\"recipient\":\"+45" + phone
@@ -79,5 +81,10 @@ public class BookingNotificationService {
 
     private String json(String value) {
         return value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
+    }
+
+    private String businessName(Booking booking) {
+        String name = booking.getBarber().getBusinessName();
+        return name == null || name.isBlank() ? booking.getBarber().getFirstName() + " " + booking.getBarber().getLastName() : name;
     }
 }

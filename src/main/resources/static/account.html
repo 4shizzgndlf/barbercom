@@ -110,6 +110,12 @@
                     <p id="profileMessage" class="message"></p></div>
             </form>
         </section>
+        <section class="account-card" id="chairsCard" hidden>
+            <header><h3>Salonstole</h3></header>
+            <p class="account-intro">Tilføj stole, så flere kunder kan booke samme tidspunkt.</p>
+            <form class="chair-form" id="chairForm"><input name="name" maxlength="40" placeholder="Fx Stol 2" required><button class="primary-button" type="submit">Tilføj stol</button></form>
+            <div id="chairsList"></div>
+        </section>
         <section class="account-card" id="appointments">
             <header><h3 id="appointmentsTitle">Bookinger</h3><a id="bookAppointmentLink" href="/booking.html">Book
                 tid</a></header>

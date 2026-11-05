@@ -7,6 +7,7 @@ public record BusinessBookingDTO(
         Long id,
         String customerName,
         String customerEmail,
+        String chairName,
         LocalDate date,
         LocalTime startTime
 ) {
