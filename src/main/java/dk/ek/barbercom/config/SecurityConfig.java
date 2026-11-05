@@ -84,7 +84,8 @@ public class SecurityConfig {
                                 "/services/**",
                                 "/css/**",
                                 "/js/**",
-                                "/images/**"
+                                "/images/**",
+                                "/uploads/**"
                         ).permitAll()
 
                         // Visitors may browse the catalogue without an account.
