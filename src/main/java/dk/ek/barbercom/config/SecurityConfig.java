@@ -79,6 +79,7 @@ public class SecurityConfig {
                                 "/article.html",
                                 "/api/auth/register",
                                 "/api/auth/status",
+                                "/api/csrf",
                                 "/api/stripe/webhook",
                                 "/products/**",
                                 "/services/**",

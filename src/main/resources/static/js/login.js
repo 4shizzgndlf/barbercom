@@ -13,24 +13,44 @@ function csrfToken() {
         ?.split("=").slice(1).join("=");
 }
 
+async function getCsrfToken() {
+    const cookieToken = csrfToken();
+    if (cookieToken) {
+        return decodeURIComponent(cookieToken);
+    }
+
+    // A first visit to a new domain can occur before the CSRF cookie has been
+    // written. Ask the server for a token instead of making the user refresh.
+    const response = await fetch("/api/csrf", {
+        credentials: "same-origin",
+        cache: "no-store"
+    });
+    if (!response.ok) {
+        return null;
+    }
+
+    const data = await response.json();
+    return data.token || null;
+}
+
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
-
-    const token = csrfToken();
-    if (!token) {
-        message.textContent = "Sikkerhedstoken mangler. Opdatér siden, og prøv igen.";
-        return;
-    }
 
     const email = document.querySelector("#email").value.trim();
     const password = document.querySelector("#password").value;
 
     try {
+        const token = await getCsrfToken();
+        if (!token) {
+            message.textContent = "Sikkerhedstoken mangler. Prøv igen om et øjeblik.";
+            return;
+        }
+
         const response = await fetch("/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "X-XSRF-TOKEN": decodeURIComponent(token)
+                "X-XSRF-TOKEN": token
             },
             body: new URLSearchParams({ email, password }),
             credentials: "same-origin"
