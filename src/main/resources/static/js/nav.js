@@ -59,6 +59,20 @@ function renderAccountNotifications(count) {
     });
 }
 
+async function getCsrfToken() {
+    const cookieToken = document.cookie.split("; ")
+        .find(cookie => cookie.startsWith("XSRF-TOKEN="))
+        ?.split("=").slice(1).join("=");
+    if (cookieToken) return decodeURIComponent(cookieToken);
+
+    const response = await fetch("/api/csrf", {
+        credentials: "same-origin",
+        cache: "no-store"
+    });
+    if (!response.ok) return null;
+    return (await response.json()).token || null;
+}
+
 function loadAccountNotifications(user) {
     if (user?.role !== "BUSINESS") {
         document.querySelectorAll("[data-account-notification]").forEach(badge => badge.remove());
@@ -234,19 +248,22 @@ window.addEventListener("cart-ready", renderCart);
 document.addEventListener("click", async event => {
     const button = event.target.closest("[data-logout]");
     if (!button) return;
-    const token = document.cookie.split("; ").find(cookie => cookie.startsWith("XSRF-TOKEN="))?.split("=").slice(1).join("=");
-    if (!token) { alert("Sikkerhedstoken mangler. Opdatér siden, og prøv igen."); return; }
-    const response = await fetch("/logout", {
-        method: "POST",
-        headers: { "X-XSRF-TOKEN": decodeURIComponent(token) },
-        credentials: "same-origin"
-    });
-    if (response.ok) {
+    try {
+        const token = await getCsrfToken();
+        if (!token) throw new Error("missing-token");
+        const response = await fetch("/logout", {
+            method: "POST",
+            headers: { "X-XSRF-TOKEN": token },
+            credentials: "same-origin"
+        });
+        if (!response.ok) throw new Error("logout-failed");
+
         sessionStorage.removeItem(cartOwnerKey);
         sessionStorage.removeItem(guestCartIdKey);
         activeCartKey = null;
         cartReady = false;
         window.location.href = "/login.html?logout";
+    } catch {
+        alert("Kunne ikke logge ud. Prøv igen.");
     }
-    else alert("Kunne ikke logge ud. Prøv igen.");
 });

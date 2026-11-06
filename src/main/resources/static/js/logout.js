@@ -4,24 +4,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!logoutButton) return;
 
-    logoutButton.addEventListener("click", async () => {
-        const token = document.cookie
+    async function getCsrfToken() {
+        const cookieToken = document.cookie
             .split("; ")
             .find(cookie => cookie.startsWith("XSRF-TOKEN="))
             ?.split("=")
             .slice(1)
             .join("=");
+        if (cookieToken) return decodeURIComponent(cookieToken);
 
-        if (!token) {
-            alert("Sikkerhedstoken mangler. Opdatér siden, og prøv igen.");
-            return;
-        }
+        const response = await fetch("/api/csrf", {
+            credentials: "same-origin",
+            cache: "no-store"
+        });
+        if (!response.ok) return null;
+        return (await response.json()).token || null;
+    }
 
+    logoutButton.addEventListener("click", async () => {
         try {
+            const token = await getCsrfToken();
+            if (!token) throw new Error("missing-token");
             const response = await fetch("/logout", {
                 method: "POST",
                 headers: {
-                    "X-XSRF-TOKEN": decodeURIComponent(token)
+                    "X-XSRF-TOKEN": token
                 },
                 credentials: "same-origin",
                 redirect: "follow"

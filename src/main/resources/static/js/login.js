@@ -33,6 +33,14 @@ async function getCsrfToken() {
     return data.token || null;
 }
 
+async function isLoggedIn() {
+    const response = await fetch("/api/auth/status", {
+        credentials: "same-origin",
+        cache: "no-store"
+    });
+    return response.ok && (await response.json()).authenticated === true;
+}
+
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -56,13 +64,24 @@ form.addEventListener("submit", async (event) => {
             credentials: "same-origin"
         });
 
-        if (response.ok && !response.url.includes("/login.html")) {
-            window.location.assign(response.url);
+        if (response.ok && await isLoggedIn()) {
+            window.location.assign("/");
             return;
         }
 
         message.textContent = "Login mislykkedes. Kontrollér din e-mail og adgangskode.";
     } catch {
+        // The server can finish the login even if a proxy interrupts the
+        // fetch response while it follows the redirect. Check the session
+        // once before showing a connection error.
+        try {
+            if (await isLoggedIn()) {
+                window.location.assign("/");
+                return;
+            }
+        } catch {
+            // Show the normal message below if the status check also fails.
+        }
         message.textContent = "Kunne ikke oprette forbindelse til serveren.";
     }
 });
