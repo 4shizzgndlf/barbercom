@@ -64,7 +64,11 @@ form.addEventListener("submit", async (event) => {
             credentials: "same-origin"
         });
 
-        if (response.ok && await isLoggedIn()) {
+        // Spring redirects a successful login to the front page and a failed
+        // login back to login.html?error. The redirect itself is definitive;
+        // do not let a second session request turn a successful login into a
+        // false error message.
+        if (response.ok && !new URL(response.url).pathname.endsWith("/login.html")) {
             window.location.assign("/");
             return;
         }
