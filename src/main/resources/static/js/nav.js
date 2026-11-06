@@ -164,7 +164,7 @@ document.querySelectorAll("#contactPanel .contact-details").forEach(details => {
 });
 
 document.querySelectorAll(".side-menu__title").forEach(logo => {
-    logo.innerHTML = '<img src="/images/bookabarber-logo.png" alt="BookaBarber">';
+    logo.innerHTML = '<a class="menu-logo-link" href="/" aria-label="BookaBarber forside"><img src="/images/bookabarber-logo.png" alt="BookaBarber"></a>';
 });
 const contactButton = document.querySelector("[data-contact-toggle]");
 const cartButton = document.querySelector("[data-cart-toggle]");
