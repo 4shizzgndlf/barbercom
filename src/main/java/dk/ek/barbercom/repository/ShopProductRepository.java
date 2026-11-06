@@ -1,4 +1,6 @@
 package dk.ek.barbercom.repository;
 import dk.ek.barbercom.model.ShopProduct;
 import org.springframework.data.jpa.repository.JpaRepository;
-public interface ShopProductRepository extends JpaRepository<ShopProduct, Long> { }
+public interface ShopProductRepository extends JpaRepository<ShopProduct, Long> {
+    java.util.List<ShopProduct> findBySellerId(Long sellerId);
+}

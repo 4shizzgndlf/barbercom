@@ -8,6 +8,7 @@ import dk.ek.barbercom.repository.BookingRepository;
 import dk.ek.barbercom.repository.BookingCancellationRepository;
 import dk.ek.barbercom.repository.ShopProductRepository;
 import dk.ek.barbercom.repository.UserRepository;
+import dk.ek.barbercom.repository.SalonChairRepository;
 import java.math.BigDecimal;
 import java.nio.file.*;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 public class AdminController {
@@ -30,9 +32,11 @@ public class AdminController {
     private final ShopProductRepository products;
     private final PasswordEncoder passwordEncoder;
     private final Path productImageDirectory;
+    private final SalonChairRepository chairs;
 
-    public AdminController(UserRepository users, CustomerOrderRepository orders, BookingRepository bookings, BookingCancellationRepository cancellations, ShopProductRepository products, PasswordEncoder passwordEncoder, @Value("${barbercom.product-image-directory:uploads}") String productImageDirectory) {
+    public AdminController(UserRepository users, CustomerOrderRepository orders, BookingRepository bookings, BookingCancellationRepository cancellations, ShopProductRepository products, SalonChairRepository chairs, PasswordEncoder passwordEncoder, @Value("${barbercom.product-image-directory:uploads}") String productImageDirectory) {
         this.users = users; this.orders = orders; this.bookings = bookings; this.cancellations = cancellations; this.products = products; this.passwordEncoder = passwordEncoder;
+        this.chairs = chairs;
         this.productImageDirectory = Paths.get(productImageDirectory).toAbsolutePath().normalize();
     }
 
@@ -119,9 +123,24 @@ public class AdminController {
     }
 
     @DeleteMapping("/api/admin/barbers/{id}")
+    @Transactional
     public ResponseEntity<?> removeBusiness(@AuthenticationPrincipal UserDetails principal, @PathVariable Long id) {
-        requireAdmin(principal); User business = users.findById(id).filter(user -> user.getRole() == Role.BUSINESS).orElse(null);
-        if (business == null) return ResponseEntity.notFound().build(); users.delete(business); return ResponseEntity.noContent().build();
+        requireAdmin(principal);
+        User business = users.findById(id).filter(user -> user.getRole() == Role.BUSINESS).orElse(null);
+        if (business == null) return ResponseEntity.notFound().build();
+        if (bookings.existsByBarberId(id)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Barbershoppen kan ikke fjernes, fordi den har bookinger. Annullér eller afslut først de tilknyttede bookinger.");
+        }
+
+        // Products and unused chairs point directly at this business user.
+        products.deleteAll(products.findBySellerId(id));
+        chairs.deleteAll(chairs.findByBusinessIdOrderByIdAsc(id));
+        products.flush();
+        chairs.flush();
+        users.delete(business);
+        users.flush();
+        return ResponseEntity.noContent().build();
     }
 
     private void requireAdmin(UserDetails principal) { User user = users.findByEmail(principal.getUsername()).orElseThrow(); if (user.getRole() != Role.ADMIN) throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN, "Kun administratorer har adgang."); }

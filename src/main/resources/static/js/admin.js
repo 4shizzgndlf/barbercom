@@ -73,7 +73,10 @@ document.addEventListener("click", async event => {
     const product = event.target.dataset.deleteProduct;
     const barber = event.target.dataset.deleteBarber;
     if (!product && !barber) return;
-    if (!confirm("Vil du fjerne denne post?")) return;
+    const confirmation = barber
+        ? "Vil du fjerne denne barbershop? Dens produkter og ubrugte stole fjernes også."
+        : "Vil du fjerne dette produkt?";
+    if (!confirm(confirmation)) return;
     try {
         await request(product ? `/api/admin/products/${product}` : `/api/admin/barbers/${barber}`, { method: "DELETE" });
         load();
