@@ -18,6 +18,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/checkout")
 public class StripeCheckoutController {
+    private static final Logger log = LoggerFactory.getLogger(StripeCheckoutController.class);
     private final CustomerOrderRepository orders;
     private final UserRepository users;
     private final ShopProductRepository products;
@@ -128,5 +131,14 @@ public class StripeCheckoutController {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> invalidCheckout(IllegalArgumentException error) {
         return ResponseEntity.badRequest().body(error.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> checkoutFailed(Exception error) {
+        // Keep provider details out of the browser, but retain the exact
+        // exception in the server log for safe deployment troubleshooting.
+        log.error("Stripe Checkout Session kunne ikke oprettes", error);
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                .body("Betalingen kunne ikke startes. Prøv igen om lidt.");
     }
 }
