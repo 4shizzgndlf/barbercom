@@ -115,7 +115,7 @@ async function loadOrders() {
         const orders = await response.json();
         renderPaginated(list, "orders", orders, order => {
             const date = new Date(order.purchasedAt).toLocaleDateString("da-DK", { day: "numeric", month: "long", year: "numeric" });
-            const products = order.items.map(item => `${item.quantity} × ${escapeHtml(item.name)}<span class="order-seller">Købt hos ${escapeHtml(item.sellerName || "Barber.com")}</span>`).join("");
+            const products = order.items.map(item => `${item.quantity} × ${escapeHtml(item.name)}<span class="order-seller">Købt hos ${escapeHtml(item.sellerName || "BookaBarber")}</span>`).join("");
             return `<article class="order-item"><div><h4>Ordre #${order.id}</h4><p>${date}</p><p>${products}</p></div><strong>${Number(order.totalAmount).toFixed(2).replace(".", ",")} DKK</strong></article>`;
         }, "Du har ikke gennemført et køb endnu.");
     } catch {

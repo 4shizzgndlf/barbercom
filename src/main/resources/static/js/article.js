@@ -17,5 +17,5 @@ const articles = {
 };
 
 const article = articles[new URLSearchParams(window.location.search).get("id")] || articles.wax;
-document.title = `${article.title} | Barber.com`;
+document.title = `${article.title} | BookaBarber`;
 document.querySelector("#articlePage").innerHTML = `<a class="back-link article-back" href="/#articlesTitle">← Tilbage til journalen</a><article class="article-content"><header><p class="eyebrow">${article.eyebrow}</p><h1>${article.title}</h1><p class="article-intro">${article.intro}</p></header><img class="article-hero" src="${article.image}" alt="${article.alt}">${article.sections.map(([heading, text]) => `<section><h2>${heading}</h2><p>${text}</p></section>`).join("")}<a class="primary-button article-shop-link" href="/shop.html">Se produkter i shoppen</a></article>`;

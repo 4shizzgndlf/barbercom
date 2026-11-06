@@ -160,7 +160,7 @@ public class OrderController {
             return item.getSellerName();
         }
         User seller = catalogSeller(item.getProductName());
-        if (seller == null) return "Barber.com";
+        if (seller == null) return "BookaBarber";
         return seller.getBusinessName() == null || seller.getBusinessName().isBlank()
                 ? seller.getFirstName() + " " + seller.getLastName()
                 : seller.getBusinessName();

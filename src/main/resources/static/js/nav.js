@@ -4,11 +4,36 @@ const closeButton = document.querySelector("[data-menu-close]");
 const menu = document.querySelector("#sideMenu");
 const backdrop = document.querySelector("#menuBackdrop");
 const searchInput = document.querySelector("#menuSearch");
+const brandName = "BookaBarber";
 const cartOwnerKey = "barbercom-cart-owner";
 const guestCartIdKey = "barbercom-guest-cart-id";
 let activeCartKey = null;
 let cartReady = false;
 let resolveCartReady;
+
+function applyBranding() {
+    document.title = document.title.replaceAll("Barber.com", brandName);
+    document.querySelectorAll("[aria-label], [alt], [placeholder]").forEach(element => {
+        ["aria-label", "alt", "placeholder"].forEach(attribute => {
+            const value = element.getAttribute(attribute);
+            if (value) element.setAttribute(attribute, value.replaceAll("Barber.com", brandName));
+        });
+    });
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+        const tagName = node.parentElement?.tagName;
+        if (tagName !== "SCRIPT" && tagName !== "STYLE") {
+            node.nodeValue = node.nodeValue.replaceAll("Barber.com", brandName);
+        }
+    }
+    document.querySelectorAll(".brand .logo-image").forEach(logo => {
+        logo.src = "/images/bookabarber-logo.png";
+        logo.alt = brandName;
+    });
+}
+
+applyBranding();
 
 // A cart is scoped to the signed-in e-mail address, never shared through one
 // browser-wide localStorage key. Guests receive a temporary session cart.
@@ -128,7 +153,7 @@ document.querySelectorAll(".side-menu__footer").forEach(footer => {
 });
 document.querySelectorAll(".search-label").forEach(label => label.textContent = "Søg");
 document.querySelectorAll(".contact-label").forEach(label => label.textContent = "Kontakt os");
-document.querySelectorAll("#menuSearch").forEach(input => input.placeholder = "Søg på Barber.com");
+document.querySelectorAll("#menuSearch").forEach(input => input.placeholder = "Søg på BookaBarber");
 document.querySelectorAll("#contactPanel .panel-top h2").forEach(title => title.textContent = "Kontakt os");
 document.querySelectorAll("#cartPanel .panel-top h2").forEach(title => title.textContent = "Din kurv");
 document.querySelectorAll("#contactPanel .contact-details").forEach(details => {
@@ -139,7 +164,7 @@ document.querySelectorAll("#contactPanel .contact-details").forEach(details => {
 });
 
 document.querySelectorAll(".side-menu__title").forEach(logo => {
-    logo.innerHTML = '<img src="/images/barbercom-logo.png" alt="Barber.com">';
+    logo.innerHTML = '<img src="/images/bookabarber-logo.png" alt="BookaBarber">';
 });
 const contactButton = document.querySelector("[data-contact-toggle]");
 const cartButton = document.querySelector("[data-cart-toggle]");

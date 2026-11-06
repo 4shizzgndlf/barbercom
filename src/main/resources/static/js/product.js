@@ -42,7 +42,7 @@ function renderProduct(product) {
     const price = Number(product.price);
     const imageUrl = escapeHtml(product.imageUrl);
     const effectiveSellerId = product.sellerId || sellerId;
-    document.title = `${product.name} | Barber.com`;
+    document.title = `${product.name} | BookaBarber`;
     detail.innerHTML = `<div class="product-detail__art product-art ${escapeHtml(product.type)}"><img src="${imageUrl}" alt="${name}"></div><div class="product-detail__content"><p class="eyebrow">Køb hos ${escapeHtml(product.sellerName)}</p><h1>${name}</h1><p class="product-detail__description">${description}</p><p class="product-detail__price">${price.toFixed(2).replace(".", ",")} DKK</p><div class="quantity-picker" aria-label="Vælg antal"><button type="button" id="decreaseQuantity" aria-label="Fjern én">−</button><output id="quantity">1</output><button type="button" id="increaseQuantity" aria-label="Tilføj én">+</button></div><button class="primary-button product-add" id="addToCart" type="button">Læg i kurv</button><p class="product-detail__note">Fri fragt ved køb over 499 DKK · Levering 1–3 hverdage</p></div>`;
 
     let quantity = 1;
