@@ -36,6 +36,9 @@
 .sale-item h4 { margin: 0 0 5px; font: 1.1rem Georgia, serif; }
 .sale-item p { margin: 0; color: var(--muted); font-size: .8rem; line-height: 1.5; }
 .sale-item strong { align-self: center; color: var(--red-dark); }
+.subscription-cancel { min-height: 46px; margin-top: 18px; border: 0 !important; border-radius: 7px; padding: 0 22px !important; cursor: pointer; color: #fff !important; background: var(--red) !important; font-size: .9rem !important; font-weight: 750; text-decoration: none !important; box-shadow: 0 8px 18px rgba(182, 41, 51, .22); transition: transform .18s, background .18s, box-shadow .18s; }
+.subscription-cancel:hover { color: #fff !important; background: var(--red-dark) !important; box-shadow: 0 11px 22px rgba(182, 41, 51, .3); transform: translateY(-1px); }
+.subscription-cancel:disabled { cursor: not-allowed; opacity: .55; transform: none; }
 
 @media (max-width: 720px) {
     .account-layout { padding-top: 64px; }

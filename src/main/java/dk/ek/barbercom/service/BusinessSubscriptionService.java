@@ -4,6 +4,7 @@ import com.stripe.StripeClient;
 import com.stripe.model.Subscription;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
+import com.stripe.param.SubscriptionUpdateParams;
 import dk.ek.barbercom.dto.UserDTO;
 import dk.ek.barbercom.model.Role;
 import dk.ek.barbercom.model.User;
@@ -86,6 +87,7 @@ public class BusinessSubscriptionService {
         userRepository.findByBusinessSubscriptionCheckoutSessionId(checkoutSessionId).ifPresent(user -> {
             user.setBusinessSubscriptionStatus("ACTIVE");
             user.setStripeSubscriptionId(subscriptionId);
+            user.setBusinessSubscriptionCancelAtPeriodEnd(false);
             if (!user.isBusinessSubscriptionConfirmationEmailSent()
                     && notifications.sendBusinessSubscriptionConfirmation(user)) {
                 user.setBusinessSubscriptionConfirmationEmailSent(true);
@@ -119,8 +121,27 @@ public class BusinessSubscriptionService {
     public void updateSubscriptionStatus(Subscription subscription) {
         userRepository.findByStripeSubscriptionId(subscription.getId()).ifPresent(user -> {
             boolean active = "active".equals(subscription.getStatus()) || "trialing".equals(subscription.getStatus());
-            user.setBusinessSubscriptionStatus(active ? "ACTIVE" : "INACTIVE");
+            boolean cancelsAtPeriodEnd = Boolean.TRUE.equals(subscription.getCancelAtPeriodEnd());
+            user.setBusinessSubscriptionCancelAtPeriodEnd(cancelsAtPeriodEnd);
+            user.setBusinessSubscriptionStatus(cancelsAtPeriodEnd && active ? "CANCELING" : active ? "ACTIVE" : "INACTIVE");
             userRepository.save(user);
         });
+    }
+
+    /** Schedules cancellation at the end of the already-paid billing period. */
+    public void cancelAtPeriodEnd(User business) throws Exception {
+        if (stripeSecretKey.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                    "Stripe er ikke konfigureret endnu.");
+        }
+        if (business.getRole() != Role.BUSINESS || business.getStripeSubscriptionId() == null
+                || business.getStripeSubscriptionId().isBlank()) {
+            throw new IllegalArgumentException("Der blev ikke fundet et aktivt abonnement.");
+        }
+
+        Subscription updated = new StripeClient(stripeSecretKey).v1().subscriptions().update(
+                business.getStripeSubscriptionId(),
+                SubscriptionUpdateParams.builder().setCancelAtPeriodEnd(true).build());
+        updateSubscriptionStatus(updated);
     }
 }

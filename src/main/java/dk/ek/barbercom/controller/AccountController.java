@@ -9,7 +9,9 @@ import dk.ek.barbercom.repository.BookingRepository;
 import dk.ek.barbercom.repository.CustomerOrderRepository;
 import dk.ek.barbercom.repository.UserRepository;
 import dk.ek.barbercom.service.UserService;
+import dk.ek.barbercom.service.BusinessSubscriptionService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,13 +33,16 @@ public class AccountController {
     private final UserService userService;
     private final BookingRepository bookingRepository;
     private final CustomerOrderRepository orderRepository;
+    private final BusinessSubscriptionService businessSubscriptions;
 
     public AccountController(UserRepository userRepository, UserService userService,
-            BookingRepository bookingRepository, CustomerOrderRepository orderRepository) {
+            BookingRepository bookingRepository, CustomerOrderRepository orderRepository,
+            BusinessSubscriptionService businessSubscriptions) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.bookingRepository = bookingRepository;
         this.orderRepository = orderRepository;
+        this.businessSubscriptions = businessSubscriptions;
     }
 
     @GetMapping
@@ -96,5 +101,34 @@ public class AccountController {
         business.setBusinessNotificationsReadAt(LocalDateTime.now());
         userRepository.save(business);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/business-subscription")
+    public ResponseEntity<?> businessSubscription(@AuthenticationPrincipal UserDetails userDetails) {
+        User business = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
+        if (business == null || business.getRole() != Role.BUSINESS) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(Map.of(
+                "cancellationScheduled", business.isBusinessSubscriptionCancelAtPeriodEnd(),
+                "hasSubscription", business.getStripeSubscriptionId() != null && !business.getStripeSubscriptionId().isBlank()));
+    }
+
+    @PostMapping("/business-subscription/cancel")
+    public ResponseEntity<?> cancelBusinessSubscription(@AuthenticationPrincipal UserDetails userDetails) {
+        User business = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
+        if (business == null || business.getRole() != Role.BUSINESS) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Kun business-profiler kan opsige abonnementet."));
+        }
+        try {
+            businessSubscriptions.cancelAtPeriodEnd(business);
+            return ResponseEntity.ok(Map.of("message", "Dit abonnement er opsagt og fortsætter resten af den allerede betalte periode."));
+        } catch (IllegalArgumentException error) {
+            return ResponseEntity.badRequest().body(Map.of("message", error.getMessage()));
+        } catch (Exception error) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(Map.of("message", "Abonnementet kunne ikke opsiges hos Stripe. Prøv igen senere."));
+        }
     }
 }

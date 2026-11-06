@@ -146,6 +146,25 @@ async function loadBusinessSales() {
     }
 }
 
+async function loadBusinessSubscription() {
+    const card = document.querySelector("#businessSubscriptionCard");
+    const text = document.querySelector("#businessSubscriptionText");
+    const button = document.querySelector("#cancelBusinessSubscription");
+    if (!card || !text || !button) return;
+
+    const response = await fetch("/api/account/business-subscription", { credentials: "same-origin" });
+    if (!response.ok) return;
+    const subscription = await response.json();
+    card.hidden = false;
+    if (!subscription.hasSubscription) {
+        text.textContent = "Der er ikke tilknyttet et aktivt Stripe-abonnement til denne konto.";
+        button.hidden = true;
+    } else if (subscription.cancellationScheduled) {
+        text.textContent = "Dit abonnement er opsagt og fortsætter resten af den allerede betalte periode.";
+        button.hidden = true;
+    }
+}
+
 async function markBusinessNotificationsRead() {
     const token = csrfToken();
     if (!token) return;
@@ -208,6 +227,34 @@ profileForm.addEventListener("submit", async event => {
     } catch { profileMessage.textContent = "Kunne ikke oprette forbindelse til serveren."; }
 });
 
+document.querySelector("#cancelBusinessSubscription")?.addEventListener("click", async event => {
+    const button = event.currentTarget;
+    const message = document.querySelector("#businessSubscriptionMessage");
+    if (!confirm("Vil du opsige abonnementet? Det fortsætter resten af den allerede betalte periode.")) return;
+
+    const token = csrfToken();
+    if (!token) {
+        message.textContent = "Sikkerhedstoken mangler. Opdatér siden, og prøv igen.";
+        return;
+    }
+    button.disabled = true;
+    try {
+        const response = await fetch("/api/account/business-subscription/cancel", {
+            method: "POST",
+            headers: { "X-XSRF-TOKEN": decodeURIComponent(token) },
+            credentials: "same-origin"
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        message.textContent = result.message;
+        button.hidden = true;
+        await loadBusinessSubscription();
+    } catch (error) {
+        message.textContent = error.message || "Abonnementet kunne ikke opsiges. Prøv igen senere.";
+        button.disabled = false;
+    }
+});
+
 async function initializeAccount() {
     currentUser = await loadProfile();
     if (!currentUser) return;
@@ -228,6 +275,7 @@ async function initializeAccount() {
         await loadBusinessAppointments();
         await loadChairs();
         await loadBusinessSales();
+        await loadBusinessSubscription();
         await markBusinessNotificationsRead();
     } else {
         await loadCustomerAppointments();

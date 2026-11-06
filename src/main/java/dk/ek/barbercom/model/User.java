@@ -21,6 +21,7 @@ public class User {
     private String businessSubscriptionStatus;
     private String businessSubscriptionCheckoutSessionId;
     private String stripeSubscriptionId;
+    private boolean businessSubscriptionCancelAtPeriodEnd;
     private boolean businessSubscriptionConfirmationEmailSent;
     private LocalDateTime businessNotificationsReadAt;
     @Enumerated(EnumType.STRING)
@@ -116,10 +117,14 @@ public class User {
     public void setBusinessSubscriptionCheckoutSessionId(String value) { this.businessSubscriptionCheckoutSessionId = value; }
     public String getStripeSubscriptionId() { return stripeSubscriptionId; }
     public void setStripeSubscriptionId(String value) { this.stripeSubscriptionId = value; }
+    public boolean isBusinessSubscriptionCancelAtPeriodEnd() { return businessSubscriptionCancelAtPeriodEnd; }
+    public void setBusinessSubscriptionCancelAtPeriodEnd(boolean value) { this.businessSubscriptionCancelAtPeriodEnd = value; }
     public boolean isBusinessSubscriptionConfirmationEmailSent() { return businessSubscriptionConfirmationEmailSent; }
     public void setBusinessSubscriptionConfirmationEmailSent(boolean value) { this.businessSubscriptionConfirmationEmailSent = value; }
     public boolean hasActiveBusinessSubscription() {
-        return role != Role.BUSINESS || businessSubscriptionStatus == null || "ACTIVE".equals(businessSubscriptionStatus);
+        return role != Role.BUSINESS || businessSubscriptionStatus == null
+                || "ACTIVE".equals(businessSubscriptionStatus)
+                || "CANCELING".equals(businessSubscriptionStatus);
     }
 
     public LocalDateTime getBusinessNotificationsReadAt() { return businessNotificationsReadAt; }
