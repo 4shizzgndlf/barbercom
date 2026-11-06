@@ -35,6 +35,8 @@
     <section class="admin-stats">
         <article><span>Brugere</span><strong id="userCount">–</strong></article>
         <article><span>Barbershops</span><strong id="businessCount">–</strong></article>
+        <article><span>Abonnementer</span><strong id="subscriptionCount">–</strong></article>
+        <article><span>Opsagte abonnementer</span><strong id="cancelledSubscriptionCount">–</strong></article>
         <article><span>Ordrer</span><strong id="orderCount">–</strong></article>
         <article><span>Bookinger</span><strong id="bookingCount">–</strong></article>
         <article><span>Annulleringer</span><strong id="cancellationCount">–</strong></article>
@@ -44,6 +46,7 @@
         <article class="admin-card"><h2>Tilføj produkt</h2><form id="productForm"><input name="name" placeholder="Produktnavn" required><input name="description" placeholder="Kort beskrivelse"><input name="price" type="number" min="0" step="0.01" placeholder="Pris i DKK" required><input name="image" type="file" accept="image/*"><select name="category"><option>Styling</option><option>Hårpleje</option><option>Skæg</option><option>Sæt</option></select><select name="type"><option value="clay">Voks / clay</option><option value="spray">Spray</option><option value="shampoo">Shampoo</option><option value="oil">Olie</option><option value="gel">Gel</option><option value="set">Sæt</option></select><select name="sellerId" id="productSeller" required></select><button class="primary-button">Tilføj produkt</button></form></article>
         <article class="admin-card"><h2>Tilføj barbershop</h2><form id="businessForm"><input name="businessName" placeholder="Virksomhedsnavn" required><input name="firstName" placeholder="Ejerens fornavn" required><input name="lastName" placeholder="Ejerens efternavn"><input name="email" type="email" placeholder="E-mail" required><input name="phoneNumber" type="tel" inputmode="numeric" pattern="[0-9]{8}" title="Skriv 8 cifre uden +45" placeholder="Telefonnummer (8 cifre)"><input name="address" placeholder="Adresse"><input name="zipCode" type="number" min="1000" max="9999" placeholder="Postnummer"><input name="password" type="password" placeholder="Adgangskode (valgfri)"><button class="primary-button">Tilføj barbershop</button></form></article>
     </section>
+    <section class="admin-list-card admin-reset-card"><h2>Nulstil driftsdata</h2><p>Fjern alle ordrer, bookinger og annulleringer. Brugere, barbershops, produkter og abonnementer beholdes.</p><button class="primary-button" id="resetCommerceData" type="button">Nulstil ordrer og bookinger</button></section>
     <section class="admin-list-card"><h2>Produkter administreret her</h2><div id="productList"></div></section>
     <section class="admin-grid"><section class="admin-list-card"><h2>Alle brugere</h2><div id="userList"></div></section><section class="admin-list-card"><h2>Barbershops</h2><div id="businessList"></div></section></section>
 </main>

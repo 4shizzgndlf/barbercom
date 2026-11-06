@@ -16,6 +16,8 @@ async function request(url, options = {}) {
 function render() {
     document.querySelector("#userCount").textContent = dashboard.userCount;
     document.querySelector("#businessCount").textContent = dashboard.businessCount;
+    document.querySelector("#subscriptionCount").textContent = dashboard.subscriptionCount;
+    document.querySelector("#cancelledSubscriptionCount").textContent = dashboard.cancelledSubscriptionCount;
     document.querySelector("#orderCount").textContent = dashboard.orderCount;
     document.querySelector("#bookingCount").textContent = dashboard.bookingCount;
     document.querySelector("#cancellationCount").textContent = dashboard.cancellationCount;
@@ -64,6 +66,18 @@ document.querySelector("#businessForm").addEventListener("submit", async event =
         });
         event.target.reset();
         load();
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+document.querySelector("#resetCommerceData")?.addEventListener("click", async () => {
+    if (!confirm("Vil du slette alle ordrer, bookinger og annulleringer?")) return;
+    if (!confirm("Dette kan ikke fortrydes. Vil du fortsætte?")) return;
+    try {
+        await request("/api/admin/reset-commerce-data", { method: "POST" });
+        await load();
+        alert("Ordrer, bookinger og annulleringer er nulstillet.");
     } catch (error) {
         alert(error.message);
     }

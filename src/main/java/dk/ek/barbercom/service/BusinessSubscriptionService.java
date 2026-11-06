@@ -11,6 +11,8 @@ import dk.ek.barbercom.model.User;
 import dk.ek.barbercom.repository.UserRepository;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class BusinessSubscriptionService {
+    private static final Logger log = LoggerFactory.getLogger(BusinessSubscriptionService.class);
     private final UserService users;
     private final UserRepository userRepository;
     private final RegistrationNotificationService notifications;
@@ -121,11 +124,35 @@ public class BusinessSubscriptionService {
     public void updateSubscriptionStatus(Subscription subscription) {
         userRepository.findByStripeSubscriptionId(subscription.getId()).ifPresent(user -> {
             boolean active = "active".equals(subscription.getStatus()) || "trialing".equals(subscription.getStatus());
-            boolean cancelsAtPeriodEnd = Boolean.TRUE.equals(subscription.getCancelAtPeriodEnd());
+            // Stripe Dashboard can represent a scheduled cancellation either
+            // with cancel_at_period_end or with a concrete cancel_at date.
+            boolean cancelsAtPeriodEnd = Boolean.TRUE.equals(subscription.getCancelAtPeriodEnd())
+                    || subscription.getCancelAt() != null;
             user.setBusinessSubscriptionCancelAtPeriodEnd(cancelsAtPeriodEnd);
             user.setBusinessSubscriptionStatus(cancelsAtPeriodEnd && active ? "CANCELING" : active ? "ACTIVE" : "INACTIVE");
             userRepository.save(user);
         });
+    }
+
+    /**
+     * Reads Stripe's source of truth when an administrator opens the
+     * dashboard. This recovers a status change if a webhook was delayed.
+     */
+    public void synchronizeSubscriptionStatus(User business) {
+        if (stripeSecretKey.isBlank() || business.getStripeSubscriptionId() == null
+                || business.getStripeSubscriptionId().isBlank()) {
+            return;
+        }
+        try {
+            Subscription subscription = new StripeClient(stripeSecretKey).v1().subscriptions()
+                    .retrieve(business.getStripeSubscriptionId());
+            updateSubscriptionStatus(subscription);
+        } catch (Exception error) {
+            // The dashboard remains available, while the log tells the
+            // administrator whether the Stripe key/account is incorrect.
+            log.warn("Kunne ikke synkronisere Stripe-abonnement {} for business-bruger {}",
+                    business.getStripeSubscriptionId(), business.getId(), error);
+        }
     }
 
     /** Schedules cancellation at the end of the already-paid billing period. */

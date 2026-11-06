@@ -9,6 +9,7 @@ import dk.ek.barbercom.repository.BookingCancellationRepository;
 import dk.ek.barbercom.repository.ShopProductRepository;
 import dk.ek.barbercom.repository.UserRepository;
 import dk.ek.barbercom.repository.SalonChairRepository;
+import dk.ek.barbercom.service.BusinessSubscriptionService;
 import java.math.BigDecimal;
 import java.nio.file.*;
 import java.util.List;
@@ -33,10 +34,12 @@ public class AdminController {
     private final PasswordEncoder passwordEncoder;
     private final Path productImageDirectory;
     private final SalonChairRepository chairs;
+    private final BusinessSubscriptionService businessSubscriptions;
 
-    public AdminController(UserRepository users, CustomerOrderRepository orders, BookingRepository bookings, BookingCancellationRepository cancellations, ShopProductRepository products, SalonChairRepository chairs, PasswordEncoder passwordEncoder, @Value("${barbercom.product-image-directory:uploads}") String productImageDirectory) {
+    public AdminController(UserRepository users, CustomerOrderRepository orders, BookingRepository bookings, BookingCancellationRepository cancellations, ShopProductRepository products, SalonChairRepository chairs, BusinessSubscriptionService businessSubscriptions, PasswordEncoder passwordEncoder, @Value("${barbercom.product-image-directory:uploads}") String productImageDirectory) {
         this.users = users; this.orders = orders; this.bookings = bookings; this.cancellations = cancellations; this.products = products; this.passwordEncoder = passwordEncoder;
         this.chairs = chairs;
+        this.businessSubscriptions = businessSubscriptions;
         this.productImageDirectory = Paths.get(productImageDirectory).toAbsolutePath().normalize();
     }
 
@@ -47,11 +50,22 @@ public class AdminController {
     public AdminDashboardDTO dashboard(@AuthenticationPrincipal UserDetails principal) {
         requireAdmin(principal);
         List<UserDTO> allUsers = users.findAll().stream().map(UserMapper::toDTO).toList();
-        List<UserDTO> businesses = users.findByRoleOrderByIdAsc(Role.BUSINESS).stream().map(UserMapper::toDTO).toList();
+        List<User> businessUsers = users.findByRoleOrderByIdAsc(Role.BUSINESS);
+        businessUsers.forEach(businessSubscriptions::synchronizeSubscriptionStatus);
+        businessUsers = users.findByRoleOrderByIdAsc(Role.BUSINESS);
+        List<UserDTO> businesses = businessUsers.stream().map(UserMapper::toDTO).toList();
+        long subscriptionCount = businessUsers.stream()
+                .filter(User::hasActiveBusinessSubscription)
+                .filter(user -> user.getStripeSubscriptionId() != null && !user.getStripeSubscriptionId().isBlank())
+                .count();
+        long cancelledSubscriptionCount = businessUsers.stream()
+                .filter(user -> user.isBusinessSubscriptionCancelAtPeriodEnd()
+                        || "INACTIVE".equals(user.getBusinessSubscriptionStatus()))
+                .count();
         BigDecimal revenue = orders.findAll().stream().filter(CustomerOrder::isPaid)
                 .map(CustomerOrder::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         long paidOrderCount = orders.findAll().stream().filter(CustomerOrder::isPaid).count();
-        return new AdminDashboardDTO(allUsers.size(), businesses.size(), paidOrderCount, bookings.count(), cancellations.count(), revenue, allUsers, businesses, products.findAll().stream().map(this::toDto).toList());
+        return new AdminDashboardDTO(allUsers.size(), businesses.size(), subscriptionCount, cancelledSubscriptionCount, paidOrderCount, bookings.count(), cancellations.count(), revenue, allUsers, businesses, products.findAll().stream().map(this::toDto).toList());
     }
 
     @PostMapping(value = "/api/admin/products", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -140,6 +154,20 @@ public class AdminController {
         chairs.flush();
         users.delete(business);
         users.flush();
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Removes operational history while retaining users, shops, products, and subscriptions. */
+    @PostMapping("/api/admin/reset-commerce-data")
+    @Transactional
+    public ResponseEntity<Void> resetCommerceData(@AuthenticationPrincipal UserDetails principal) {
+        requireAdmin(principal);
+        bookings.deleteAll();
+        orders.deleteAll();
+        cancellations.deleteAll();
+        bookings.flush();
+        orders.flush();
+        cancellations.flush();
         return ResponseEntity.noContent().build();
     }
 
