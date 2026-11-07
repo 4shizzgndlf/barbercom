@@ -71,6 +71,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/index.html",
+                                "/robots.txt",
+                                "/sitemap.xml",
                                 "/login",
                                 "/login.html",
                                 "/register.html",
