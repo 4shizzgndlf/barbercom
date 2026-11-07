@@ -685,3 +685,73 @@ body.menu-open { overflow: hidden; }
 .admin-search { display: grid; gap: 6px; margin: -4px 0 14px; color: var(--muted); font-size: .78rem; }
 .admin-search input { width: 100%; min-height: 40px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 7px; padding: 0 11px; background: #fff; font: inherit; color: var(--ink); }
 .admin-search input:focus { outline: 2px solid rgba(182, 41, 51, .22); border-color: var(--red); }
+
+/* Full-page loader shown while the first page assets are loading. */
+html.page-is-loading body > :not(.site-loader) { visibility: hidden; }
+
+.site-loader {
+    position: fixed;
+    z-index: 20000;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 16px;
+    overflow: hidden;
+    color: #252b30;
+    background: #f5f6f6;
+    opacity: 1;
+    transition: opacity .3s ease, visibility .3s ease;
+}
+
+.site-loader::before,
+.site-loader::after {
+    position: absolute;
+    width: clamp(240px, 40vw, 520px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    content: "";
+    background: rgba(182, 41, 51, .09);
+}
+
+.site-loader::before { top: -48%; left: -12%; }
+.site-loader::after { right: -18%; bottom: -56%; background: rgba(182, 41, 51, .13); }
+
+.site-loader__ring {
+    position: relative;
+    z-index: 1;
+    width: 122px;
+    aspect-ratio: 1;
+    border: 3px solid rgba(182, 41, 51, .18);
+    border-top-color: var(--red);
+    border-right-color: var(--red);
+    border-radius: 50%;
+    animation: bookabarber-spin 1s linear infinite;
+}
+
+.site-loader__logo {
+    position: absolute;
+    z-index: 2;
+    width: 82px;
+    height: auto;
+    object-fit: contain;
+    animation: bookabarber-logo-pulse 1.6s ease-in-out infinite;
+}
+
+.site-loader__text {
+    position: relative;
+    z-index: 1;
+    font-size: .74rem;
+    font-weight: 750;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.site-loader--leaving { visibility: hidden; opacity: 0; pointer-events: none; }
+
+@keyframes bookabarber-spin { to { transform: rotate(360deg); } }
+@keyframes bookabarber-logo-pulse { 50% { transform: scale(1.06); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .site-loader__ring, .site-loader__logo { animation: none; }
+}

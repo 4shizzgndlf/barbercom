@@ -1,3 +1,9 @@
+if (!document.documentElement.classList.contains("page-is-loading") && !document.querySelector(".site-loader")) {
+    const loadingScript = document.createElement("script");
+    loadingScript.src = "/js/loading.js";
+    document.head.append(loadingScript);
+}
+
 if (!document.querySelector(".site-footer")) {
     document.body.insertAdjacentHTML("beforeend", `
         <footer class="site-footer">
