@@ -360,8 +360,8 @@ body.menu-open { overflow: hidden; }
 }
 
 .menu-backdrop.is-open { opacity: 1; pointer-events: auto; }
-.right-panel { position: fixed; z-index: 11; top: 0; right: 0; bottom: 0; width: min(390px, 88vw); padding: 25px 29px 34px; color: #20262b; background: white; box-shadow: -14px 0 35px rgba(0,0,0,.14); transform: translateX(102%); transition: transform .32s cubic-bezier(.2,.75,.25,1); }
-.right-panel.is-open { transform: translateX(0); }
+.right-panel { position: fixed; z-index: 11; top: 0; right: 0; bottom: 0; width: min(390px, 88vw); padding: 25px 29px 34px; color: #20262b; visibility: hidden; pointer-events: none; background: white; box-shadow: none; transform: translateX(102%); transition: transform .32s cubic-bezier(.2,.75,.25,1), visibility 0s linear .32s; }
+.right-panel.is-open { visibility: visible; pointer-events: auto; box-shadow: -14px 0 35px rgba(0,0,0,.14); transform: translateX(0); transition: transform .32s cubic-bezier(.2,.75,.25,1), visibility 0s; }
 .panel-top { display:flex; justify-content:space-between; align-items:center; padding-bottom:24px; border-bottom:1px solid #e1e4e6; }
 .panel-top h2 { margin:0; color:var(--red); font-family:"Fredoka",sans-serif; font-size:1.45rem; }
 .contact-details { display:grid; gap:22px; margin-top:34px; }
@@ -389,13 +389,15 @@ body.menu-open { overflow: hidden; }
     flex-direction: column;
     padding: 25px 29px 34px;
     color: #20262b;
+    visibility: hidden;
+    pointer-events: none;
     background: #fff;
-    box-shadow: 14px 0 35px rgba(0, 0, 0, .14);
+    box-shadow: none;
     transform: translateX(-102%);
-    transition: transform .32s cubic-bezier(.2, .75, .25, 1);
+    transition: transform .32s cubic-bezier(.2, .75, .25, 1), visibility 0s linear .32s;
 }
 
-.side-menu.is-open { transform: translateX(0); }
+.side-menu.is-open { visibility: visible; pointer-events: auto; box-shadow: 14px 0 35px rgba(0, 0, 0, .14); transform: translateX(0); transition: transform .32s cubic-bezier(.2, .75, .25, 1), visibility 0s; }
 
 .side-menu__top {
     display: flex;
