@@ -1,10 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Book din næste klipning hos lokale barbere i København. Find barbershops, book tid og shop hårprodukter hos BookaBarber.">
+    <meta name="robots" content="index,follow">
+    <link rel="canonical" href="https://bookabarber.org/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="BookaBarber">
+    <meta property="og:locale" content="da_DK">
+    <meta property="og:title" content="BookaBarber | Find din næste fade i København">
+    <meta property="og:description" content="Book tid hos lokale barbere og shop hårprodukter samlet ét sted.">
+    <meta property="og:url" content="https://bookabarber.org/">
+    <meta property="og:image" content="https://bookabarber.org/images/bookabarber-logo.png">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="icon" href="/images/bookabarber-favicon.svg" type="image/svg+xml">
-    <title>Barber.com | Find din næste fade</title>
+    <title>BookaBarber | Find din næste fade i København</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
@@ -15,6 +26,38 @@
     <script src="/js/products.js" defer></script>
     <script src="/js/logout.js" defer></script>
     <script src="/js/footer.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "name": "BookaBarber",
+          "url": "https://bookabarber.org/",
+          "inLanguage": "da-DK",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://bookabarber.org/shop.html?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "name": "BookaBarber",
+          "url": "https://bookabarber.org/",
+          "email": "loegcas@gmail.com",
+          "telephone": "+4561128112",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Vesterbrogade 181",
+            "postalCode": "1800",
+            "addressLocality": "Frederiksberg",
+            "addressCountry": "DK"
+          }
+        }
+      ]
+    }
+    </script>
 </head>
 <body>
 <nav class="site-nav" aria-label="Main navigation">
