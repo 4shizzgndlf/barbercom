@@ -7,6 +7,19 @@ const shopSort = document.querySelector("#shopSort");
 const clearShopFilters = document.querySelector("#clearShopFilters");
 const shopProducts = [];
 
+function finishShopLoading() {
+    const images = [...shopGrid.querySelectorAll("img")];
+    const waitForImage = image => image.complete
+        ? Promise.resolve()
+        : new Promise(resolve => {
+            image.addEventListener("load", resolve, {once: true});
+            image.addEventListener("error", resolve, {once: true});
+        });
+
+    Promise.all(images.map(waitForImage)).then(() =>
+        window.dispatchEvent(new Event("bookabarber:content-ready")));
+}
+
 shopSearch.value = new URLSearchParams(window.location.search).get("search") || "";
 
 function populateSelect(select, values) {
@@ -26,7 +39,7 @@ async function loadShopBarbers() {
 async function loadAdminProducts() {
     try {
         const response = await fetch("/api/catalog/products");
-        if (!response.ok) return;
+        if (!response.ok) throw new Error("Produkterne kunne ikke hentes");
         const products = await response.json();
         shopProducts.splice(0, shopProducts.length, ...products.map(product => ({
             id: `custom-${product.id}`, name: product.name, description: product.description,
@@ -36,8 +49,10 @@ async function loadAdminProducts() {
         shopCategory.innerHTML = '<option value="">Alle kategorier</option>';
         populateSelect(shopCategory, [...new Set(shopProducts.map(product => product.category))].sort((a, b) => a.localeCompare(b, "da")));
         renderShop();
+        finishShopLoading();
     } catch {
         shopGrid.innerHTML = '<p class="shop-empty">Produkterne kunne ikke indlæses. Prøv igen om lidt.</p>';
+        window.dispatchEvent(new Event("bookabarber:content-ready"));
     }
 }
 

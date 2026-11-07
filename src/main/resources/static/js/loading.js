@@ -23,7 +23,11 @@
         };
 
         // Never keep a visitor waiting more than five seconds for a slow image.
-        if (document.readyState === "complete") {
+        if (root.dataset.waitForDynamicContent === "true") {
+            // Some pages create their images after fetching data from the API.
+            // They tell the loader when those images have settled.
+            window.addEventListener("bookabarber:content-ready", dismiss, { once: true });
+        } else if (document.readyState === "complete") {
             dismiss();
         } else {
             window.addEventListener("load", dismiss, { once: true });
