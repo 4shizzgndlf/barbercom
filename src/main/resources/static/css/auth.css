@@ -705,19 +705,6 @@ html.page-is-loading body > :not(.site-loader) { visibility: hidden; }
     transition: opacity .3s ease, visibility .3s ease;
 }
 
-.site-loader::before,
-.site-loader::after {
-    position: absolute;
-    width: clamp(240px, 40vw, 520px);
-    aspect-ratio: 1;
-    border-radius: 50%;
-    content: "";
-    background: rgba(182, 41, 51, .09);
-}
-
-.site-loader::before { top: -48%; left: -12%; }
-.site-loader::after { right: -18%; bottom: -56%; background: rgba(182, 41, 51, .13); }
-
 .site-loader__mark {
     position: relative;
     z-index: 1;
