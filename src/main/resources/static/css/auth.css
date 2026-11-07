@@ -322,6 +322,7 @@ body.menu-open { overflow: hidden; }
 }
 
 .nav-control:hover { color: var(--red); }
+.site-nav, .nav-side, .nav-control, .icon-control { box-shadow: none; filter: none; }
 
 .menu-icon {
     display: grid;
@@ -717,11 +718,16 @@ html.page-is-loading body > :not(.site-loader) { visibility: hidden; }
 .site-loader::before { top: -48%; left: -12%; }
 .site-loader::after { right: -18%; bottom: -56%; background: rgba(182, 41, 51, .13); }
 
-.site-loader__ring {
+.site-loader__mark {
     position: relative;
     z-index: 1;
     width: 122px;
     aspect-ratio: 1;
+}
+
+.site-loader__ring {
+    position: absolute;
+    inset: 0;
     border: 3px solid rgba(182, 41, 51, .18);
     border-top-color: var(--red);
     border-right-color: var(--red);
@@ -732,9 +738,12 @@ html.page-is-loading body > :not(.site-loader) { visibility: hidden; }
 .site-loader__logo {
     position: absolute;
     z-index: 2;
+    top: 50%;
+    left: 50%;
     width: 82px;
     height: auto;
     object-fit: contain;
+    transform: translate(-50%, -50%);
     animation: bookabarber-logo-pulse 1.6s ease-in-out infinite;
 }
 
@@ -750,7 +759,7 @@ html.page-is-loading body > :not(.site-loader) { visibility: hidden; }
 .site-loader--leaving { visibility: hidden; opacity: 0; pointer-events: none; }
 
 @keyframes bookabarber-spin { to { transform: rotate(360deg); } }
-@keyframes bookabarber-logo-pulse { 50% { transform: scale(1.06); } }
+@keyframes bookabarber-logo-pulse { 50% { transform: translate(-50%, -50%) scale(1.06); } }
 
 @media (prefers-reduced-motion: reduce) {
     .site-loader__ring, .site-loader__logo { animation: none; }

@@ -7,8 +7,10 @@
 
         document.body.insertAdjacentHTML("afterbegin", `
             <div class="site-loader" role="status" aria-live="polite" aria-label="BookaBarber indlæser siden">
-                <div class="site-loader__ring" aria-hidden="true"></div>
-                <img class="site-loader__logo" src="/images/bookabarber-logo.png" alt="BookaBarber">
+                <div class="site-loader__mark">
+                    <div class="site-loader__ring" aria-hidden="true"></div>
+                    <img class="site-loader__logo" src="/images/bookabarber-logo.png" alt="BookaBarber">
+                </div>
                 <span class="site-loader__text">Indlæser din næste fade</span>
             </div>`);
 
