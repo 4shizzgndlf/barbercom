@@ -711,7 +711,7 @@ html.page-is-loading body > :not(.site-loader) { visibility: hidden; }
     position: relative;
     z-index: 1;
     width: 122px;
-    aspect-ratio: 1;
+    height: 122px;
 }
 
 .site-loader__ring {
@@ -731,6 +731,7 @@ html.page-is-loading body > :not(.site-loader) { visibility: hidden; }
     left: 50%;
     width: 82px;
     height: auto;
+    margin: 0;
     object-fit: contain;
     transform: translate(-50%, -50%);
     animation: bookabarber-logo-pulse 1.6s ease-in-out infinite;
