@@ -140,9 +140,13 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Tiden overlapper en eksisterende booking på stolen.");
         }
         Booking booking = new Booking();
-        User existingCustomer = customerPhone.length() != 8 ? null : users.findByPhoneNumber(Integer.valueOf(customerPhone))
+        List<User> matchingCustomers = customerPhone.length() != 8 ? List.of() : users.findAllByPhoneNumber(Integer.valueOf(customerPhone)).stream()
                 .filter(user -> user.getRole() != Role.BUSINESS)
-                .orElse(null);
+                .toList();
+        // A phone number can exist on old duplicate profiles. In that case the
+        // safe choice is to keep the booking as a manual booking rather than
+        // attach it to the wrong customer account.
+        User existingCustomer = matchingCustomers.size() == 1 ? matchingCustomers.get(0) : null;
         booking.setCustomer(existingCustomer);
         booking.setBarber(business);
         booking.setChair(chair);
