@@ -754,3 +754,16 @@ html.page-is-loading body > :not(.site-loader) { visibility: hidden; }
 @media (prefers-reduced-motion: reduce) {
     .site-loader__ring, .site-loader__logo { animation: none; }
 }
+
+@media (max-width: 720px) {
+    .manual-booking-form input[type="date"],
+    .manual-booking-form input[type="time"] {
+        display: block;
+        box-sizing: border-box !important;
+        inline-size: calc(100% - 2px) !important;
+        max-inline-size: calc(100% - 2px) !important;
+        min-inline-size: 0 !important;
+        width: calc(100% - 2px) !important;
+        max-width: calc(100% - 2px) !important;
+    }
+}
