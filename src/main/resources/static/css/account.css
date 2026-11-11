@@ -16,10 +16,10 @@
 .appointment-item__actions { display: flex; align-items: center; gap: 9px; }
 .appointment-item__actions button { border: 0; padding: 8px 10px; cursor: pointer; color: var(--muted); background: transparent; font-size: .75rem; text-decoration: underline; text-underline-offset: 3px; }
 .appointment-item__actions button:hover { color: var(--red); }
-.business-day-nav { display: grid; grid-template-columns: 42px 1fr 42px; align-items: center; gap: 12px; margin-top: 22px; }
+.business-day-nav { display: grid; grid-template-columns: auto minmax(150px, 210px) 1fr; align-items: center; gap: 12px; margin-top: 22px; }
 .business-day-nav[hidden], #bookAppointmentLink[hidden] { display: none; }
-.business-day-nav button { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 50%; cursor: pointer; color: var(--ink); background: #fff; font-size: 1.2rem; }
-.business-day-nav button:hover { border-color: var(--red); color: #fff; background: var(--red); }
+.business-day-nav label { color: var(--muted); font-size: .75rem; font-weight: 750; }
+.business-day-nav input { height: 42px; min-width: 0; border: 1px solid var(--line); border-radius: 7px; padding: 0 10px; color: var(--ink); background: #fff; font: inherit; }
 .business-day-nav p { margin: 0; color: var(--red-dark); font-size: .84rem; font-weight: 750; text-align: center; text-transform: capitalize; }
 .appointment-item--business { justify-content: flex-start; }
 .appointment-item--business > time { min-width: 62px; text-align: center; }
@@ -45,5 +45,6 @@
     .account-content { padding: 38px 16px 60px; }
     .appointment-item { align-items: flex-start; }
     .appointment-item__actions { align-items: flex-end; flex-direction: column; }
-    .business-day-nav { grid-template-columns: 38px 1fr 38px; gap: 8px; }
+    .business-day-nav { grid-template-columns: 1fr; gap: 8px; }
+    .business-day-nav p { text-align: left; }
 }

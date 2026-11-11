@@ -34,26 +34,31 @@ public class BookingNotificationService {
     public void sendBookingConfirmation(Booking booking) {
         String shopName = businessName(booking);
         String chairName = booking.getChair() == null ? "Stol 1" : booking.getChair().getName();
-        try {
-            MimeMessageHelper message = new MimeMessageHelper(mailSender.createMimeMessage(), false, StandardCharsets.UTF_8.name());
-            message.setFrom(new InternetAddress(from, "BookaBarber", StandardCharsets.UTF_8.name()));
-            message.setTo(booking.getCustomer().getEmail());
-            message.setSubject("Din booking hos BookaBarber er bekræftet");
-            message.setText("Hej " + booking.getCustomer().getFirstName() + ",\n\n"
-                    + "Din tid hos " + shopName + " ved " + chairName
-                    + " er bekræftet den " + booking.getBookingDate() + " kl. " + booking.getStartTime() + ".\n\n"
-                    + "Vi glæder os til at se dig.\nBookaBarber");
-            mailSender.send(message.getMimeMessage());
-        } catch (Exception exception) {
-            // A notification outage must never cancel a confirmed database booking.
-            System.err.println("Kunne ikke sende bookingmail: " + exception.getMessage());
+        String email = customerEmail(booking);
+        if (email != null && !email.isBlank()) {
+            try {
+                MimeMessageHelper message = new MimeMessageHelper(mailSender.createMimeMessage(), false, StandardCharsets.UTF_8.name());
+                message.setFrom(new InternetAddress(from, "BookaBarber", StandardCharsets.UTF_8.name()));
+                message.setTo(email);
+                message.setSubject("Din booking hos BookaBarber er bekræftet");
+                message.setText("Hej " + customerName(booking) + ",\n\n"
+                        + "Din tid hos " + shopName + " ved " + chairName
+                        + " er bekræftet den " + booking.getBookingDate() + " kl. " + booking.getStartTime()
+                        + " i " + duration(booking) + " minutter.\n\n"
+                        + "Vi glæder os til at se dig.\nBookaBarber");
+                mailSender.send(message.getMimeMessage());
+            } catch (Exception exception) {
+                // A notification outage must never cancel a confirmed database booking.
+                System.err.println("Kunne ikke sende bookingmail: " + exception.getMessage());
+            }
         }
         sendBookingSms(booking);
     }
 
     private void sendBookingSms(Booking booking) {
-        if (brevoApiKey.isBlank() || booking.getCustomer().getPhoneNumber() == null) return;
-        String phone = String.valueOf(booking.getCustomer().getPhoneNumber());
+        if (brevoApiKey.isBlank()) return;
+        String phone = customerPhone(booking);
+        if (phone == null) return;
         if (!phone.matches("\\d{8}")) {
             System.err.println("Kunne ikke sende bookingsms: kunden mangler et gyldigt dansk 8-cifret telefonnummer.");
             return;
@@ -61,7 +66,7 @@ public class BookingNotificationService {
 
         String content = "BookaBarber: Din tid hos " + businessName(booking) + " ved "
                 + (booking.getChair() == null ? "Stol 1" : booking.getChair().getName()) + " er bekræftet den "
-                + booking.getBookingDate() + " kl. " + booking.getStartTime() + ".";
+                + booking.getBookingDate() + " kl. " + booking.getStartTime() + " i " + duration(booking) + " min.";
         String body = "{\"type\":\"transactional\",\"unicodeEnabled\":true,\"sender\":\""
                 + json(smsSender) + "\",\"recipient\":\"+45" + phone
                 + "\",\"content\":\"" + json(content) + "\"}";
@@ -87,5 +92,22 @@ public class BookingNotificationService {
     private String businessName(Booking booking) {
         String name = booking.getBarber().getBusinessName();
         return name == null || name.isBlank() ? booking.getBarber().getFirstName() + " " + booking.getBarber().getLastName() : name;
+    }
+
+    private String customerName(Booking booking) {
+        return booking.getCustomer() == null ? booking.getManualCustomerName() : booking.getCustomer().getFirstName();
+    }
+
+    private String customerEmail(Booking booking) {
+        return booking.getCustomer() == null ? booking.getManualCustomerEmail() : booking.getCustomer().getEmail();
+    }
+
+    private String customerPhone(Booking booking) {
+        return booking.getCustomer() == null ? booking.getManualCustomerPhone()
+                : booking.getCustomer().getPhoneNumber() == null ? null : String.valueOf(booking.getCustomer().getPhoneNumber());
+    }
+
+    private int duration(Booking booking) {
+        return booking.getDurationMinutes() == null ? 30 : booking.getDurationMinutes();
     }
 }

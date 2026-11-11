@@ -28,6 +28,22 @@ public class BookingChairMigration {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void migrate() {
+        boolean hasDurationColumn = jdbc.queryForList("SHOW COLUMNS FROM `booking`").stream()
+                .anyMatch(row -> "duration_minutes".equals(String.valueOf(row.get("Field"))));
+        if (!hasDurationColumn) {
+            jdbc.execute("ALTER TABLE `booking` ADD COLUMN duration_minutes INT NOT NULL DEFAULT 30");
+        }
+        jdbc.execute("UPDATE `booking` SET duration_minutes = 30 WHERE duration_minutes IS NULL OR duration_minutes < 5");
+
+        boolean customerCanBeEmpty = jdbc.queryForList("SHOW COLUMNS FROM `booking`").stream()
+                .filter(row -> "customer_id".equals(String.valueOf(row.get("Field"))))
+                .anyMatch(row -> "YES".equalsIgnoreCase(String.valueOf(row.get("Null"))));
+        if (!customerCanBeEmpty) {
+            // A business can add an external walk-in customer who does not
+            // have a BookaBarber account, so customer_id must be nullable.
+            jdbc.execute("ALTER TABLE `booking` MODIFY COLUMN customer_id BIGINT NULL");
+        }
+
         Map<Long, SalonChair> defaults = new HashMap<>();
         for (User business : users.findByRoleOrderByIdAsc(Role.BUSINESS)) {
             SalonChair chair = chairs.findByBusinessIdOrderByIdAsc(business.getId()).stream().findFirst().orElseGet(() -> {
@@ -48,11 +64,14 @@ public class BookingChairMigration {
         boolean hasBarberIndex = jdbc.queryForList("SHOW INDEX FROM `booking`").stream()
                 .anyMatch(row -> "idx_booking_barber_id".equals(String.valueOf(row.get("Key_name"))));
         if (!hasBarberIndex) jdbc.execute("CREATE INDEX idx_booking_barber_id ON `booking` (barber_id)");
+        boolean hasChairIndex = jdbc.queryForList("SHOW INDEX FROM `booking`").stream()
+                .anyMatch(row -> "idx_booking_chair_id".equals(String.valueOf(row.get("Key_name"))));
+        if (!hasChairIndex) jdbc.execute("CREATE INDEX idx_booking_chair_id ON `booking` (chair_id)");
         Map<String, List<String>> indexes = new HashMap<>();
         for (Map<String, Object> row : jdbc.queryForList("SHOW INDEX FROM `booking`"))
             indexes.computeIfAbsent(String.valueOf(row.get("Key_name")), ignored -> new ArrayList<>()).add(String.valueOf(row.get("Column_name")));
         indexes.forEach((name, columns) -> {
-            if (!"PRIMARY".equals(name) && columns.containsAll(List.of("barber_id", "booking_date", "start_time")) && name.matches("[A-Za-z0-9_]+"))
+            if (!"PRIMARY".equals(name) && columns.containsAll(List.of("chair_id", "booking_date", "start_time")) && name.matches("[A-Za-z0-9_]+"))
                 jdbc.execute("ALTER TABLE `booking` DROP INDEX `" + name + "`");
         });
     }

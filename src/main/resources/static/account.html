@@ -128,11 +128,25 @@
             <header><h3 id="appointmentsTitle">Bookinger</h3><a id="bookAppointmentLink" href="/booking.html">Book
                 tid</a></header>
             <div class="business-day-nav" id="businessDayNav" hidden>
-                <button type="button" data-day-change="-1" aria-label="Forrige dag">←</button>
+                <label for="businessBookingDate">Vælg dato</label>
+                <input id="businessBookingDate" type="date">
                 <p id="businessDayLabel"></p>
-                <button type="button" data-day-change="1" aria-label="Næste dag">→</button>
             </div>
             <div id="appointmentsList"><p class="empty-state">Dine kommende bookinger vises her.</p></div>
+        </section>
+        <section class="account-card" id="manualBookingCard" hidden>
+            <header><h3>Tilføj booking</h3></header>
+            <p class="account-intro">Opret en booking direkte i virksomhedens kalender — også for kunder, der ikke har en BookaBarber-konto.</p>
+            <form class="manual-booking-form" id="manualBookingForm">
+                <label>Kundens navn<input name="customerName" maxlength="100" required></label>
+                <label>Kundens e-mail <small class="field-optional">Valgfrit</small><input name="customerEmail" type="email" maxlength="160"></label>
+                <label>Kundens telefon <small class="field-optional">Valgfrit</small><input name="customerPhone" type="tel" inputmode="tel" maxlength="20" placeholder="Fx 61128112"></label>
+                <label>Stol<select name="chairId" id="manualBookingChair" required><option value="">Indlæser stole …</option></select></label>
+                <label>Dato<input name="date" id="manualBookingDate" type="date" required></label>
+                <label>Tidspunkt<input name="startTime" type="time" step="300" required></label>
+                <label>Varighed i minutter<input name="durationMinutes" type="number" min="5" max="480" step="5" value="30" required></label>
+                <div><button class="primary-button" type="submit">Tilføj booking</button><p class="message" id="manualBookingMessage" role="status"></p></div>
+            </form>
         </section>
         <section class="account-card" id="orders">
             <header><h3>Ordrer</h3><a href="/shop.html">Se produkter</a></header>

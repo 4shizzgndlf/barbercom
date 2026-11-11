@@ -3,8 +3,13 @@ const profileMessage = document.querySelector("#profileMessage");
 const appointmentsList = document.querySelector("#appointmentsList");
 const businessDayNav = document.querySelector("#businessDayNav");
 const businessDayLabel = document.querySelector("#businessDayLabel");
+const businessBookingDate = document.querySelector("#businessBookingDate");
 const chairForm = document.querySelector("#chairForm");
 const chairsList = document.querySelector("#chairsList");
+const manualBookingForm = document.querySelector("#manualBookingForm");
+const manualBookingChair = document.querySelector("#manualBookingChair");
+const manualBookingDate = document.querySelector("#manualBookingDate");
+const manualBookingMessage = document.querySelector("#manualBookingMessage");
 let currentUser;
 let selectedBusinessDate = new Date();
 const paymentSuccess = new URLSearchParams(window.location.search).get("payment") === "success";
@@ -76,7 +81,7 @@ async function loadCustomerAppointments() {
         const bookings = await response.json();
         renderPaginated(appointmentsList, "customerBookings", bookings, booking => {
             const date = formatDate(new Date(`${booking.date}T12:00:00`));
-            return `<article class="appointment-item"><div><p class="eyebrow">${date}</p><h4>${escapeHtml(booking.barberName)}</h4></div><div class="appointment-item__actions"><time>${booking.startTime.slice(0, 5)}</time><button type="button" data-cancel-booking="${booking.id}">Annullér</button></div></article>`;
+            return `<article class="appointment-item"><div><p class="eyebrow">${date}</p><h4>${escapeHtml(booking.barberName)}</h4></div><div class="appointment-item__actions"><time>${booking.startTime.slice(0, 5)} · ${booking.durationMinutes} min.</time><button type="button" data-cancel-booking="${booking.id}">Annullér</button></div></article>`;
         }, "Du har ingen bookinger endnu.");
     } catch {
         appointmentsList.innerHTML = '<p class="empty-state">Kunne ikke hente dine bookinger.</p>';
@@ -91,8 +96,8 @@ async function loadBusinessAppointments() {
         const bookings = await response.json();
         renderPaginated(appointmentsList, "businessBookings", bookings, booking => `
             <article class="appointment-item appointment-item--business">
-                <time>${booking.startTime.slice(0, 5)}</time>
-                <div><h4>${escapeHtml(booking.customerName)}</h4><p>${escapeHtml(booking.customerEmail)} · ${escapeHtml(booking.chairName)}</p></div>
+                <time>${booking.startTime.slice(0, 5)} · ${booking.durationMinutes} min.</time>
+                <div><h4>${escapeHtml(booking.customerName)}</h4><p>${escapeHtml(booking.customerEmail || "Ingen e-mail")} · ${escapeHtml(booking.customerPhone ? `+45 ${booking.customerPhone}` : "Ingen telefon")} · ${escapeHtml(booking.chairName)}</p></div>
             </article>`, "Der er ingen bookinger denne dag.");
     } catch {
         appointmentsList.innerHTML = '<p class="empty-state">Kunne ikke hente dagens bookinger.</p>';
@@ -104,6 +109,11 @@ async function loadChairs() {
     if (!response.ok) return;
     const chairs = await response.json();
     chairsList.innerHTML = chairs.map(chair => `<div class="chair-row"><span>${escapeHtml(chair.name)}</span><button type="button" data-delete-chair="${chair.id}">Fjern</button></div>`).join("");
+    if (manualBookingChair) {
+        const previousValue = manualBookingChair.value;
+        manualBookingChair.innerHTML = '<option value="">Vælg stol</option>' + chairs.map(chair => `<option value="${chair.id}">${escapeHtml(chair.name)}</option>`).join("");
+        manualBookingChair.value = previousValue;
+    }
 }
 
 async function loadOrders() {
@@ -206,12 +216,31 @@ chairsList?.addEventListener("click", async event => {
     if (response.ok) loadChairs(); else alert(await response.text());
 });
 
-businessDayNav?.addEventListener("click", event => {
-    const button = event.target.closest("[data-day-change]");
-    if (!button) return;
-    selectedBusinessDate.setDate(selectedBusinessDate.getDate() + Number(button.dataset.dayChange));
+businessBookingDate?.addEventListener("change", () => {
+    if (!businessBookingDate.value) return;
+    selectedBusinessDate = new Date(`${businessBookingDate.value}T12:00:00`);
     pagination.businessBookings = { page: 1 };
     loadBusinessAppointments();
+});
+
+manualBookingForm?.addEventListener("submit", async event => {
+    event.preventDefault();
+    const token = csrfToken();
+    if (!token) { manualBookingMessage.textContent = "Opdatér siden, og prøv igen."; return; }
+    const values = Object.fromEntries(new FormData(manualBookingForm));
+    values.chairId = Number(values.chairId);
+    values.durationMinutes = Number(values.durationMinutes);
+    const response = await fetch("/api/account/bookings", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-XSRF-TOKEN": decodeURIComponent(token)},
+        credentials: "same-origin",
+        body: JSON.stringify(values)
+    });
+    if (!response.ok) { manualBookingMessage.textContent = (await response.text()) || "Bookingen kunne ikke oprettes."; return; }
+    manualBookingMessage.textContent = "Bookingen er tilføjet.";
+    manualBookingForm.reset();
+    manualBookingDate.value = isoDate(new Date());
+    await loadBusinessAppointments();
 });
 
 profileForm.addEventListener("submit", async event => {
@@ -272,6 +301,11 @@ async function initializeAccount() {
         document.querySelector("#orders").hidden = true;
         businessDayNav.hidden = false;
         document.querySelector("#chairsCard").hidden = false;
+        document.querySelector("#manualBookingCard").hidden = false;
+        const today = isoDate(new Date());
+        businessBookingDate.value = today;
+        manualBookingDate.min = today;
+        manualBookingDate.value = today;
         await loadBusinessAppointments();
         await loadChairs();
         await loadBusinessSales();
