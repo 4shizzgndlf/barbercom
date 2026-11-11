@@ -47,4 +47,14 @@
     .appointment-item__actions { align-items: flex-end; flex-direction: column; }
     .business-day-nav { grid-template-columns: 1fr; gap: 8px; }
     .business-day-nav p { text-align: left; }
+    .manual-booking-form input[type="date"],
+    .manual-booking-form input[type="time"] {
+        display: block;
+        -webkit-appearance: none;
+        appearance: none;
+        box-sizing: border-box;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
 }

@@ -11,7 +11,6 @@ import dk.ek.barbercom.service.BookingNotificationService;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Locale;
 
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -141,7 +140,7 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Tiden overlapper en eksisterende booking på stolen.");
         }
         Booking booking = new Booking();
-        User existingCustomer = customerEmail.isBlank() ? null : users.findByEmail(customerEmail.toLowerCase(Locale.ROOT))
+        User existingCustomer = customerPhone.length() != 8 ? null : users.findByPhoneNumber(Integer.valueOf(customerPhone))
                 .filter(user -> user.getRole() != Role.BUSINESS)
                 .orElse(null);
         booking.setCustomer(existingCustomer);
