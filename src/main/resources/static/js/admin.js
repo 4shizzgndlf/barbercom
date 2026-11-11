@@ -21,10 +21,15 @@ function renderPagedList(container, key, entries, renderEntry, emptyMessage) {
 
 function renderUsers() {
     const query = document.querySelector("#userSearch")?.value.trim().toLowerCase() || "";
-    const users = dashboard.users.filter(user => [user.firstName, user.lastName, user.email, user.role]
+    const users = dashboard.users.filter(user => [user.firstName, user.lastName, user.email, user.phoneNumber, user.address, user.zipCode, user.role, user.businessName]
         .some(value => String(value ?? "").toLowerCase().includes(query)));
-    renderPagedList(document.querySelector("#userList"), "users", users, user =>
-        `<div class="admin-row"><span><b>${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}</b><small>${escapeHtml(user.email)} · ${escapeHtml(user.role)}</small></span></div>`,
+    renderPagedList(document.querySelector("#userList"), "users", users, user => {
+        const address = [user.address, user.zipCode].filter(Boolean).join(", ");
+        const contact = [user.email, user.phoneNumber && `Tlf. ${user.phoneNumber}`, address].filter(Boolean).join(" · ");
+        const role = user.role === "BUSINESS" ? "Virksomhed" : user.role === "ADMIN" ? "Administrator" : "Privat";
+        const businessName = user.businessName ? `<small>${escapeHtml(user.businessName)}</small>` : "";
+        return `<div class="admin-row"><span><b>${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}</b>${businessName}<small>${escapeHtml(role)}</small><small>${escapeHtml(contact || "Ingen kontaktoplysninger")}</small></span></div>`;
+    },
     "Ingen brugere matcher din søgning.");
 }
 
