@@ -81,7 +81,7 @@
 <main class="booking-page"><a class="back-link" href="/">← Tilbage til Barber.com</a>
     <div class="booking-heading"><p class="eyebrow">Din næste klipning</p>
         <h1>Book en tid.</h1>
-        <p>Vælg barbershop, dato, stol, tidspunkt og hvor længe din behandling varer.</p></div>
+        <p>Vælg barbershop, dato, stol og et ledigt tidspunkt.</p></div>
     <section class="booking-layout">
         <aside class="booking-customer"><p class="eyebrow">Dine oplysninger</p>
             <h2 id="customerName">Indlæser …</h2>
@@ -89,9 +89,9 @@
             <p id="customerPhone"></p><a href="/account.html">Redigér oplysninger</a></aside>
         <form class="booking-form" id="bookingForm"><label>Vælg barbershop<select id="bookingBarber" required>
             <option value="">Vælg barbershop</option>
-        </select></label><label>Dato<input id="bookingDate" type="date" required></label><label>Stol<select id="bookingChair" required disabled><option value="">Vælg først barbershop og dato</option></select></label><label>Tidspunkt<input id="bookingTime" type="time" step="300" required></label><label>Varighed i minutter<input id="bookingDuration" type="number" min="5" max="480" step="5" value="30" required></label>
+        </select></label><label>Dato<input id="bookingDate" type="date" required></label>
             <fieldset>
-                <legend>Reserverede tider</legend>
+                <legend>Vælg stol og tidspunkt</legend>
                 <div class="time-slots chair-time-slots" id="timeSlots"><p>Vælg først barbershop og dato.</p></div>
             </fieldset>
             <button class="primary-button" type="submit" id="bookButton" disabled>Bekræft booking</button>

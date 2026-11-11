@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 public class BookingController {
+    private static final int CUSTOMER_BOOKING_DURATION_MINUTES = 20;
     private final UserRepository users;
     private final BookingRepository bookings;
     private final BookingCancellationRepository cancellations;
@@ -86,8 +87,10 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Virksomhedsprofiler kan ikke booke tider. Log ind med en privat- eller administratorprofil.");
         }
-        if (request.barberId() == null || request.chairId() == null || request.date() == null || request.startTime() == null || !validDuration(request.durationMinutes()))
-            return ResponseEntity.badRequest().body("Vælg barbershop, stol, dato, tidspunkt og en varighed mellem 5 og 480 minutter.");
+        if (request.barberId() == null || request.chairId() == null || request.date() == null || request.startTime() == null || request.durationMinutes() == null)
+            return ResponseEntity.badRequest().body("Vælg barbershop, stol, dato og tidspunkt.");
+        if (request.durationMinutes() != CUSTOMER_BOOKING_DURATION_MINUTES)
+            return ResponseEntity.badRequest().body("Private bookinger varer altid 20 minutter.");
         if (request.date().isBefore(LocalDate.now()) || (request.date().isEqual(LocalDate.now()) && request.startTime().isBefore(LocalTime.now())))
             return ResponseEntity.badRequest().body("Tidspunktet er allerede passeret.");
         User barber = users.findById(request.barberId()).filter(user -> user.getRole() == Role.BUSINESS).orElse(null);
@@ -104,7 +107,7 @@ public class BookingController {
         booking.setChair(chair);
         booking.setBookingDate(request.date());
         booking.setStartTime(request.startTime());
-        booking.setDurationMinutes(request.durationMinutes());
+        booking.setDurationMinutes(CUSTOMER_BOOKING_DURATION_MINUTES);
         Booking savedBooking = bookings.save(booking);
         notifications.sendBookingConfirmation(savedBooking);
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(savedBooking));
